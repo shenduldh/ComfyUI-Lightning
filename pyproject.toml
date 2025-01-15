@@ -1,5 +1,5 @@
 [project]
-name = "flux-lightning" # Unique identifier for your node. Immutable after creation.
+name = "flux-lightning"
 description = "Accelerate FLUX inferencing speed for ComfyUI"
 version = "1.0.0"
 license = { file = "LICENSE.txt" }
