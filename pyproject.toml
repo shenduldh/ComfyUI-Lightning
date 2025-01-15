@@ -5,7 +5,7 @@ version = "1.0.0"
 license = { file = "LICENSE.txt" }
 
 [project.urls]
-Repository = "https://github.com/..."
+Repository = "https://github.com/shenduldh/ComfyUI-Lightning"
 
 [tool.comfy]
 PublisherId = "daking"
