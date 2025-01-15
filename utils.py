@@ -21,7 +21,7 @@ def poly1d(coefficients, x):
     return result
 
 
-def forward_orig(
+def skip_forward_orig(
     self,
     img: Tensor,
     img_ids: Tensor,
@@ -35,6 +35,9 @@ def forward_orig(
     attn_mask: Tensor = None,
 ) -> Tensor:
     patches_replace = transformer_options.get("patches_replace", {})
+    ds_skip_blocks = transformer_options.get("ds_skip_blocks", [])
+    ss_skip_blocks = transformer_options.get("ss_skip_blocks", [])
+    
     if img.ndim != 3 or txt.ndim != 3:
         raise ValueError("Input img and txt tensors must have 3 dimensions.")
 
@@ -56,6 +59,10 @@ def forward_orig(
 
     blocks_replace = patches_replace.get("dit", {})
     for i, block in enumerate(self.double_blocks):
+        #### skip blocks
+        if i in ds_skip_blocks:
+            continue
+
         if ("double_block", i) in blocks_replace:
 
             def block_wrap(args):
@@ -89,6 +96,9 @@ def forward_orig(
 
     for i, block in enumerate(self.single_blocks):
         if ("single_block", i) in blocks_replace:
+            #### skip blocks
+            if i in ss_skip_blocks:
+                continue
 
             def block_wrap(args):
                 out = {}
@@ -121,7 +131,7 @@ def forward_orig(
     return img
 
 
-def custom_forward_orig(
+def teacache_skip_forward_orig(
     self,
     img: Tensor,
     img_ids: Tensor,
@@ -135,6 +145,10 @@ def custom_forward_orig(
     attn_mask: Tensor = None,
 ) -> Tensor:
     patches_replace = transformer_options.get("patches_replace", {})
+    rel_l1_thresh = transformer_options.get("rel_l1_thresh", 0.4)
+    ds_skip_blocks = transformer_options.get("ds_skip_blocks", [])
+    ss_skip_blocks = transformer_options.get("ss_skip_blocks", [])
+
     if img.ndim != 3 or txt.ndim != 3:
         raise ValueError("Input img and txt tensors must have 3 dimensions.")
 
@@ -162,44 +176,45 @@ def custom_forward_orig(
     img_mod1, _ = self.double_blocks[0].img_mod(vec_)
     modulated_inp = self.double_blocks[0].img_norm1(inp)
     modulated_inp = (1 + img_mod1.scale) * modulated_inp + img_mod1.shift
+    ca_idx = 0
 
-    if self.cnt == 0 or self.cnt == self.steps - 1:
+    if not hasattr(self, "accumulated_rel_l1_distance"):
         should_calc = True
         self.accumulated_rel_l1_distance = 0
     else:
-        coefficients = [
-            4.98651651e02,
-            -2.83781631e02,
-            5.58554382e01,
-            -3.82021401e00,
-            2.64230861e-01,
-        ]
-        self.accumulated_rel_l1_distance += poly1d(
-            coefficients,
-            (
-                (modulated_inp - self.previous_modulated_input).abs().mean()
-                / self.previous_modulated_input.abs().mean()
-            ),
-        )
-        if self.accumulated_rel_l1_distance < self.rel_l1_thresh:
-            should_calc = False
-        else:
+        try:
+            coefficients = [
+                4.98651651e02,
+                -2.83781631e02,
+                5.58554382e01,
+                -3.82021401e00,
+                2.64230861e-01,
+            ]
+            self.accumulated_rel_l1_distance += poly1d(
+                coefficients,
+                (
+                    (modulated_inp - self.previous_modulated_input).abs().mean()
+                    / self.previous_modulated_input.abs().mean()
+                ),
+            )
+            if self.accumulated_rel_l1_distance < rel_l1_thresh:
+                should_calc = False
+            else:
+                should_calc = True
+                self.accumulated_rel_l1_distance = 0
+        except:
             should_calc = True
             self.accumulated_rel_l1_distance = 0
 
     self.previous_modulated_input = modulated_inp
-    self.cnt += 1
-
-    if self.cnt == self.steps:
-        self.cnt = 0
 
     if not should_calc:
         img += self.previous_residual
     else:
         orig_img = img.clone()
         for i, block in enumerate(self.double_blocks):
-            #### skip blocks
-            if i in self.ds_skip_blocks:
+            ### skip blocks
+            if i in ds_skip_blocks:
                 continue
 
             if ("double_block", i) in blocks_replace:
@@ -237,14 +252,27 @@ def custom_forward_orig(
                     if add is not None:
                         img += add
 
+            ### PuLID attention
+            if getattr(self, "pulid_data", {}):
+                if i % self.pulid_double_interval == 0:
+                    ### calculate influence of all pulid nodes at once
+                    for _, node_data in self.pulid_data.items():
+                        if torch.any(
+                            (node_data["sigma_start"] >= timesteps)
+                            & (timesteps >= node_data["sigma_end"])
+                        ):
+                            img = img + node_data["weight"] * self.pulid_ca[ca_idx](
+                                node_data["embedding"], img
+                            )
+                    ca_idx += 1
+
         img = torch.cat((txt, img), 1)
 
         for i, block in enumerate(self.single_blocks):
-            #### skip blocks
-            if i in self.ss_skip_blocks:
-                continue
-
             if ("single_block", i) in blocks_replace:
+                ### skip blocks
+                if i in ss_skip_blocks:
+                    continue
 
                 def block_wrap(args):
                     out = {}
@@ -270,6 +298,22 @@ def custom_forward_orig(
                     add = control_o[i]
                     if add is not None:
                         img[:, txt.shape[1] :, ...] += add
+
+            ### PuLID attention
+            if getattr(self, "pulid_data", {}):
+                real_img, txt = img[:, txt.shape[1] :, ...], img[:, : txt.shape[1], ...]
+                if i % self.pulid_single_interval == 0:
+                    ### calculate influence of all nodes at once
+                    for _, node_data in self.pulid_data.items():
+                        if torch.any(
+                            (node_data["sigma_start"] >= timesteps)
+                            & (timesteps >= node_data["sigma_end"])
+                        ):
+                            real_img = real_img + node_data["weight"] * self.pulid_ca[
+                                ca_idx
+                            ](node_data["embedding"], real_img)
+                    ca_idx += 1
+                img = torch.cat((txt, real_img), 1)
 
         img = img[:, txt.shape[1] :, ...]
         self.previous_residual = img - orig_img

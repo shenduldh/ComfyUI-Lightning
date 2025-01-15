@@ -17,7 +17,12 @@ from torchao.quantization import float8_weight_only, int8_weight_only, quantize_
 from comfy.model_patcher import ModelPatcher
 from comfy.sd import VAE
 import types
-from .utils import custom_forward_orig, has_affordable_memory, is_newer_than_ada_lovelace
+from .utils import (
+    skip_forward_orig,
+    teacache_skip_forward_orig,
+    has_affordable_memory,
+    is_newer_than_ada_lovelace,
+)
 
 
 class ApplyTeaCacheAndSkipBlocks:
@@ -28,43 +33,51 @@ class ApplyTeaCacheAndSkipBlocks:
                 "model": ("MODEL",),
                 "skip_DoubleStreamBlocks": ("STRING", {"default": "3,6,8,12"}),
                 "skip_SingleStreamBlocks": ("STRING", {"default": ""}),
+                "do_teacache": ("BOOLEAN", {"default": True}),
                 "rel_l1_thresh": (
                     "FLOAT",
                     {"default": 0.4, "min": 0.0, "max": 10.0, "step": 0.01},
                 ),
-                "steps": ("INT", {"default": 25, "min": 1, "max": 10000, "step": 1}),
             }
         }
 
     RETURN_TYPES = ("MODEL",)
-    FUNCTION = "apply"
+    FUNCTION = "teacache_and_skip"
     CATEGORY = "Lightning"
     TITLE = "Apply TeaCache and Skip Blocks"
 
-    def apply(
+    def teacache_and_skip(
         self,
         model: ModelPatcher,
         skip_DoubleStreamBlocks: str,
         skip_SingleStreamBlocks: str,
+        do_teacache: bool,
         rel_l1_thresh: float,
-        steps: int,
-    ):
-        dm: torch.nn.Module = model.get_model_object("diffusion_model")
-        if hasattr(dm, "_orig_mod"):
-            dm: torch.nn.Module = dm._orig_mod
+    ) -> tuple[ModelPatcher,]:
+        cloned_model = model.clone()
 
-        dm.__class__.ds_skip_blocks = [
+        if "transformer_options" not in cloned_model.model_options:
+            cloned_model.model_options["transformer_options"] = {}
+        cloned_model.model_options["transformer_options"]["ds_skip_blocks"] = [
             int(x) for x in skip_DoubleStreamBlocks.split(",") if x
         ]
-        dm.__class__.ss_skip_blocks = [
+        cloned_model.model_options["transformer_options"]["ss_skip_blocks"] = [
             int(x) for x in skip_SingleStreamBlocks.split(",") if x
         ]
-        dm.__class__.cnt = 0
-        dm.__class__.rel_l1_thresh = rel_l1_thresh
-        dm.__class__.steps = steps
-        dm.__class__.forward_orig = types.MethodType(custom_forward_orig, dm)
 
-        return model
+        dm: torch.nn.Module = cloned_model.get_model_object("diffusion_model")
+        if hasattr(dm, "_orig_mod"):
+            dm: torch.nn.Module = getattr(dm, "_orig_mod", dm)
+
+        if do_teacache:
+            cloned_model.model_options["transformer_options"][
+                "rel_l1_thresh"
+            ] = rel_l1_thresh
+            dm.forward_orig = types.MethodType(teacache_skip_forward_orig, dm)
+        else:
+            dm.forward_orig = types.MethodType(skip_forward_orig, dm)
+
+        return (cloned_model,)
 
 
 class CompileAndQuantizeModel:
@@ -75,8 +88,8 @@ class CompileAndQuantizeModel:
                 "model": ("MODEL",),
                 "vae": ("VAE",),
                 "do_compile": ("BOOLEAN", {"default": True}),
-                "dynamic": ("BOOLEAN", {"default": True}),
-                "fullgraph": ("BOOLEAN", {"default": True}),
+                "dynamic": ("BOOLEAN", {"default": False}),
+                "fullgraph": ("BOOLEAN", {"default": False}),
                 "backend": (
                     torch.compiler.list_backends(),
                     {"default": "inductor"},
@@ -85,14 +98,14 @@ class CompileAndQuantizeModel:
         }
 
     RETURN_TYPES = ("MODEL", "VAE")
-    FUNCTION = "apply"
+    FUNCTION = "compile_and_quantize"
     CATEGORY = "Lightning"
     TITLE = "Compile and Quantize Model"
 
     _quantized = False
     _last_compiled_cfg = None
 
-    def apply(
+    def compile_and_quantize(
         self,
         model: ModelPatcher,
         vae: VAE,
@@ -100,9 +113,10 @@ class CompileAndQuantizeModel:
         dynamic: bool,
         fullgraph: bool,
         backend: str,
-    ):
-        dm: torch.nn.Module = model.get_model_object("diffusion_model")
-        ae: torch.nn.Module = vae.first_stage_model
+    ) -> tuple[ModelPatcher, VAE]:
+        cloned_model = model.clone()
+        dm: torch.nn.Module = cloned_model.get_model_object("diffusion_model")
+        ae: torch.nn.Module = getattr(vae, "first_stage_model")
         if hasattr(dm, "_orig_mod"):
             dm: torch.nn.Module = getattr(dm, "_orig_mod", dm)
             ae: torch.nn.Module = getattr(ae, "_orig_mod", ae)
@@ -125,7 +139,7 @@ class CompileAndQuantizeModel:
         if do_compile:
             curr_compiled_cfg = str(dynamic) + str(fullgraph) + backend
             if curr_compiled_cfg == self._last_compiled_cfg:
-                return model, vae
+                return cloned_model, vae
             self._last_compiled_cfg == curr_compiled_cfg
 
             compile_mode = (
@@ -152,10 +166,10 @@ class CompileAndQuantizeModel:
                 dynamic=dynamic,
             )
 
-            model.model.diffusion_model = dm
-            vae.first_stage_model = ae
+            cloned_model.add_object_patch("diffusion_model", dm)
+            setattr(vae, "first_stage_model", ae)
 
-        return model, vae
+        return cloned_model, vae
 
 
 NODE_CLASS_MAPPINGS = {
