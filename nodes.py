@@ -17,7 +17,7 @@ from torchao.quantization import float8_weight_only, int8_weight_only, quantize_
 from comfy.model_patcher import ModelPatcher
 from comfy.sd import VAE
 import types
-from utils import custom_forward_orig, has_affordable_memory, is_newer_than_ada_lovelace
+from .utils import custom_forward_orig, has_affordable_memory, is_newer_than_ada_lovelace
 
 
 class ApplyTeaCacheAndSkipBlocks:
