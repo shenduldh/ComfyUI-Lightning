@@ -1,0 +1,13 @@
+[project]
+name = "flux-lightning" # Unique identifier for your node. Immutable after creation.
+description = "Accelerate FLUX inferencing speed for ComfyUI"
+version = "1.0.0"
+license = { file = "LICENSE.txt" }
+
+[project.urls]
+Repository = "https://github.com/..."
+
+[tool.comfy]
+PublisherId = "daking"
+DisplayName = "ComfyUI-Lightning"
+Icon = ""
