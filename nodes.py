@@ -19,6 +19,37 @@ from .utils import (
 )
 
 
+class ApplySageAttention:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "model": ("MODEL",),
+                "use_SageAttention": ("BOOLEAN", {"default": True}),
+            }
+        }
+
+    RETURN_TYPES = ("MODEL",)
+    FUNCTION = "patch"
+    CATEGORY = "Lightning"
+    TITLE = "Apply SageAttention"
+
+    def patch(self, model: ModelPatcher, use_SageAttention: bool):
+        try:
+            if use_SageAttention:
+                from sageattention import sageattn
+                from comfy.ldm.modules.attention import attention_sage
+                from comfy.ldm.modules import attention
+                from comfy.ldm.flux import math
+
+                attention.sageattn = sageattn
+                math.optimized_attention = attention_sage
+        except:
+            pass
+
+        return (model,)
+
+
 class ApplyTeaCacheAndSkipBlocks:
     @classmethod
     def INPUT_TYPES(s):
@@ -254,5 +285,6 @@ class CompileAndQuantizeModel:
 NODE_CLASS_MAPPINGS = {
     "ApplyTeaCacheAndSkipBlocks": ApplyTeaCacheAndSkipBlocks,
     "ApplyFBCacheAndSkipBlocks": ApplyFBCacheAndSkipBlocks,
+    "ApplySageAttention": ApplySageAttention,
     "CompileAndQuantizeModel": CompileAndQuantizeModel,
 }
