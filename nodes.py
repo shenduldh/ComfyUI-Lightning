@@ -247,6 +247,12 @@ class CompileAndQuantizeModel:
             self._quantized = True
 
         if do_compile:
+            if dynamic:  # fix rope to prevent dynamic compilation error
+                from comfy.ldm.flux import layers
+                from .utils import fixed_rope
+
+                layers.rope = fixed_rope
+
             curr_compiled_cfg = str(dynamic) + str(fullgraph) + backend
             if curr_compiled_cfg == self._last_compiled_cfg:
                 return cloned_model, vae

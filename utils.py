@@ -1,6 +1,8 @@
 import torch
 from torch import Tensor
 from comfy.ldm.flux.layers import timestep_embedding
+from einops import rearrange
+import comfy.model_management
 
 
 def has_affordable_memory(device: torch.device) -> bool:
@@ -199,7 +201,7 @@ def teacache_skip_forward_orig(
             / self.prev_modulated_img.abs().mean()
         )
     except:
-        torch._dynamo.graph_break()  ### speeding up compiling
+        torch._dynamo.graph_break()  ### speed up compilation
         self.accum_rel_l1_distance = rel_l1_threshold
 
     self.prev_modulated_img = curr_modulated_img
@@ -375,7 +377,7 @@ def fbcache_skip_forward_orig(
                 )
                 use_cached = validate_use_cached(use_cached, timesteps.item())
             except:
-                torch._dynamo.graph_break()  ### speeding up compiling
+                torch._dynamo.graph_break()  ### speed up compilation
                 use_cached = False
             self.prev_first_block_output = img
 
@@ -424,3 +426,19 @@ def fbcache_skip_forward_orig(
 
     img = self.final_layer(img, vec)  # (N, T, patch_size ** 2 * out_channels)
     return img
+
+
+def fixed_rope(pos: Tensor, dim: int, theta: int) -> Tensor:
+    assert dim % 2 == 0
+    if comfy.model_management.is_device_mps(pos.device) or comfy.model_management.is_intel_xpu():
+        device = torch.device("cpu")
+    else:
+        device = pos.device
+
+    scale = torch.linspace(0, (dim - 2) / dim, steps=dim//2, dtype=torch.float64, device=device)
+    theta = torch.tensor(theta).to(dtype=scale.dtype, device=device)
+    omega = 1.0 / (theta**scale)
+    out = torch.einsum("...n,d->...nd", pos.to(dtype=torch.float32, device=device), omega)
+    out = torch.stack([torch.cos(out), -torch.sin(out), torch.sin(out), torch.cos(out)], dim=-1)
+    out = rearrange(out, "b n d (i j) -> b n d i j", i=2, j=2)
+    return out.to(dtype=torch.float32, device=pos.device)

@@ -9,6 +9,7 @@ I use follow tips to accelerate FLUX inference speed:
 3. Compile and quantize model;
 4. Use fast CuDNN attention kernels;
 5. Use SageAttention.
+6. Fix `AttributeError: 'SymInt' object has no attribute 'size'` to speed up recompilation after a resolution change.
 
 More details see above given repositories.
 
