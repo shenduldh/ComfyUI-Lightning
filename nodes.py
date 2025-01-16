@@ -1,10 +1,3 @@
-"""
-1. TeaCache、FBCache
-2. skip blocks
-3. compile and quantize
-4. fast CuDNN attention kernels
-"""
-
 import torch
 
 torch.set_float32_matmul_precision("high")
