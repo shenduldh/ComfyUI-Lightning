@@ -14,10 +14,19 @@ def is_newer_than_ada_lovelace(device: torch.device) -> int:
     return cc_major * 10 + cc_minor >= 89
 
 
-def poly1d(coefficients, x):
+teacache_coef = [
+    4.98651651e02,
+    -2.83781631e02,
+    5.58554382e01,
+    -3.82021401e00,
+    2.64230861e-01,
+]
+
+
+def poly1d(x):
     result = torch.zeros_like(x)
-    for i, coeff in enumerate(coefficients):
-        result += coeff * (x ** (len(coefficients) - 1 - i))
+    for i, coeff in enumerate(teacache_coef):
+        result += coeff * (x ** (len(teacache_coef) - 1 - i))
     return result
 
 
@@ -27,10 +36,6 @@ def are_tensors_similar(tensor1: Tensor, tensor2: Tensor, threshold: float):
     tensor1_abs_mean = tensor1.abs().mean()
     diff = diff_abs_mean / tensor1_abs_mean
     return diff.item() < threshold
-
-
-def validate_use_cache(use_cache: bool):
-    pass
 
 
 def skip_forward_orig(
@@ -187,19 +192,11 @@ def teacache_skip_forward_orig(
     img_mod1, _ = self.double_blocks[0].img_mod(vec_)
     curr_modulated_img = self.double_blocks[0].img_norm1(img_)
     curr_modulated_img = (1 + img_mod1.scale) * curr_modulated_img + img_mod1.shift
-    coefficients = [
-        4.98651651e02,
-        -2.83781631e02,
-        5.58554382e01,
-        -3.82021401e00,
-        2.64230861e-01,
-    ]
 
     try:
         self.accum_rel_l1_distance += poly1d(
-            coefficients,
             (curr_modulated_img - self.prev_modulated_img).abs().mean()
-            / self.prev_modulated_img.abs().mean(),
+            / self.prev_modulated_img.abs().mean()
         )
     except:
         torch._dynamo.graph_break()  ### speeding up compiling
@@ -337,6 +334,8 @@ def fbcache_skip_forward_orig(
     for i, block in enumerate(self.double_blocks):
         #### skip blocks
         if i in ds_skip_blocks:
+            if i == 0:
+                use_cached = False
             continue
 
         if ("double_block", i) in blocks_replace:

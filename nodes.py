@@ -43,11 +43,11 @@ class ApplyTeaCacheAndSkipBlocks:
         }
 
     RETURN_TYPES = ("MODEL",)
-    FUNCTION = "teacache_and_skip"
+    FUNCTION = "patch"
     CATEGORY = "Lightning"
     TITLE = "Apply TeaCache and Skip Blocks"
 
-    def teacache_and_skip(
+    def patch(
         self,
         model: ModelPatcher,
         skip_DoubleStreamBlocks: str,
@@ -106,11 +106,11 @@ class ApplyFBCacheAndSkipBlocks:
         }
 
     RETURN_TYPES = ("MODEL",)
-    FUNCTION = "fbcache_and_skip"
+    FUNCTION = "patch"
     CATEGORY = "Lightning"
     TITLE = "Apply FBCache and Skip Blocks"
 
-    def fbcache_and_skip(
+    def patch(
         self,
         model: ModelPatcher,
         skip_DoubleStreamBlocks: str,
