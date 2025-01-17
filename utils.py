@@ -3,6 +3,7 @@ from torch import Tensor
 from comfy.ldm.flux.layers import timestep_embedding
 from einops import rearrange
 import comfy.model_management
+import torch.nn.functional as F
 
 
 def fixed_rope(pos: Tensor, dim: int, theta: int) -> Tensor:
@@ -62,7 +63,7 @@ def are_tensors_similar(tensor1: Tensor, tensor2: Tensor, threshold: float):
     diff_abs_mean = (tensor1 - tensor2).abs().mean()
     tensor1_abs_mean = tensor1.abs().mean()
     diff = diff_abs_mean / tensor1_abs_mean
-    return diff.item() < threshold
+    return diff < threshold
 
 
 def skip_forward_orig(
@@ -487,12 +488,13 @@ def mbcache_skip_forward_orig(
     attn_mask: Tensor = None,
 ) -> Tensor:
     patches_replace = transformer_options.get("patches_replace", {})
-    cache_threshold = transformer_options.get("cache_threshold")
+    dsb_cache_thresholds = transformer_options.get("dsb_cache_thresholds")
+    # ssb_cache_thresholds = transformer_options.get("ssb_cache_thresholds")
     validate_use_cached = transformer_options.get("validator")
     ds_skip_blocks = transformer_options.get("ds_skip_blocks")
     ss_skip_blocks = transformer_options.get("ss_skip_blocks")
     previous_ds_comparisons = transformer_options.get("previous_ds_comparisons")
-    previous_ss_comparisons = transformer_options.get("previous_ss_comparisons")
+    # previous_ss_comparisons = transformer_options.get("previous_ss_comparisons")
     previous_residuals = transformer_options.get("previous_residuals")
     use_cached = False
 
@@ -556,7 +558,7 @@ def mbcache_skip_forward_orig(
         if previous_ds_comparisons.has(cache_key):
             # torch._dynamo.graph_break()
             use_cached = are_tensors_similar(
-                img, previous_ds_comparisons.get(cache_key), cache_threshold
+                img, previous_ds_comparisons.get(cache_key), dsb_cache_thresholds[i]
             )
             use_cached = validate_use_cached(use_cached, timesteps.item())
         previous_ds_comparisons.set(cache_key, img)
@@ -600,23 +602,23 @@ def mbcache_skip_forward_orig(
                     if add is not None:
                         img[:, txt.shape[1] :, ...] += add
 
-            ### Cache
-            cache_key = f"single_stream_block{i}"
-            if previous_ss_comparisons.has(cache_key):
-                # torch._dynamo.graph_break()
-                use_cached = are_tensors_similar(
-                    img, previous_ss_comparisons.get(cache_key), cache_threshold
-                )
-                use_cached = validate_use_cached(use_cached, timesteps.item())
-            previous_ss_comparisons.set(cache_key, img)
-            if use_cached:
-                break
+            # ### Cache
+            # cache_key = f"single_stream_block{i}"
+            # if previous_ss_comparisons.has(cache_key):
+            #     # torch._dynamo.graph_break()
+            #     use_cached = are_tensors_similar(
+            #         img, previous_ss_comparisons.get(cache_key), ssb_cache_thresholds[i]
+            #     )
+            #     use_cached = validate_use_cached(use_cached, timesteps.item())
+            # previous_ss_comparisons.set(cache_key, img)
+            # if use_cached:
+            #     break
 
-        if use_cached:
-            img += previous_residuals.get(cache_key)
-        else:
-            for k in previous_ss_comparisons.keys():
-                previous_residuals.set(k, img - previous_ss_comparisons.get(k))
+        # if use_cached:
+        #     img += previous_residuals.get(cache_key)
+        # else:
+        #     for k in previous_ss_comparisons.keys():
+        #         previous_residuals.set(k, img - previous_ss_comparisons.get(k))
 
         img = img[:, txt.shape[1] :, ...]
 

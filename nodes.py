@@ -161,7 +161,6 @@ class ApplyFBCacheAndSkipBlocks:
         if isinstance(dm, torch._dynamo.OptimizedModule):
             dm: torch.nn.Module = getattr(dm, "_orig_mod", dm)
 
-        torch._dynamo.config.capture_scalar_outputs = True
         cloned_model.model_options["transformer_options"][
             "fbcache_threshold"
         ] = fbcache_threshold
@@ -199,10 +198,12 @@ class ApplyMBCacheAndSkipBlocks:
                 "model": ("MODEL",),
                 "skip_DoubleStreamBlocks": ("STRING", {"default": "3,6,8,12"}),
                 "skip_SingleStreamBlocks": ("STRING", {"default": ""}),
-                "cache_threshold": (
+                "default_cache_threshold": (
                     "FLOAT",
                     {"default": 0.25, "min": 0.0, "max": 1.0, "step": 0.001},
                 ),
+                "dsb_cache_thresholds": ("STRING", {"default": ""}),
+                # "ssb_cache_thresholds": ("STRING", {"default": ""}),
                 "start": (
                     "FLOAT",
                     {"default": 0.0, "step": 0.01, "max": 1.0, "min": 0.0},
@@ -225,7 +226,9 @@ class ApplyMBCacheAndSkipBlocks:
         model: ModelPatcher,
         skip_DoubleStreamBlocks: str,
         skip_SingleStreamBlocks: str,
-        cache_threshold: float,
+        default_cache_threshold: float,
+        dsb_cache_thresholds: str,
+        # ssb_cache_thresholds: str,
         start: float,
         end: float,
         max_consecutive_cache_hits: int,
@@ -245,8 +248,6 @@ class ApplyMBCacheAndSkipBlocks:
         dm: torch.nn.Module = cloned_model.get_model_object("diffusion_model")
         if isinstance(dm, torch._dynamo.OptimizedModule):
             dm: torch.nn.Module = getattr(dm, "_orig_mod", dm)
-
-        torch._dynamo.config.capture_scalar_outputs = True
 
         # cache related
         if max_consecutive_cache_hits >= 0 or start > 0 or end < 1:
@@ -270,8 +271,27 @@ class ApplyMBCacheAndSkipBlocks:
             validator = lambda *args: args[0]
         cloned_model.model_options["transformer_options"]["validator"] = validator
         cloned_model.model_options["transformer_options"][
-            "cache_threshold"
-        ] = cache_threshold
+            "default_cache_threshold"
+        ] = default_cache_threshold
+
+        thresholds = [default_cache_threshold] * len(dm.double_blocks)
+        for i, t in enumerate(dsb_cache_thresholds.split(",")):
+            t = t.strip()
+            if t:
+                thresholds[i] = float(t)
+        cloned_model.model_options["transformer_options"][
+            "dsb_cache_thresholds"
+        ] = thresholds
+
+        # thresholds = [default_cache_threshold] * len(dm.single_blocks)
+        # for i, t in enumerate(ssb_cache_thresholds.split(",")):
+        #     t = t.strip()
+        #     if t:
+        #         thresholds[i] = float(t)
+        # cloned_model.model_options["transformer_options"][
+        #     "ssb_cache_thresholds"
+        # ] = thresholds
+
         cloned_model.model_options["transformer_options"][
             "previous_ds_comparisons"
         ] = Cache()
