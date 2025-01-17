@@ -14,6 +14,8 @@ from .utils import (
     skip_forward_orig,
     teacache_skip_forward_orig,
     fbcache_skip_forward_orig,
+    mbcache_skip_forward_orig,
+    Cache,
     has_affordable_memory,
     is_newer_than_ada_lovelace,
 )
@@ -189,6 +191,102 @@ class ApplyFBCacheAndSkipBlocks:
         return (cloned_model,)
 
 
+class ApplyMBCacheAndSkipBlocks:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "model": ("MODEL",),
+                "skip_DoubleStreamBlocks": ("STRING", {"default": "3,6,8,12"}),
+                "skip_SingleStreamBlocks": ("STRING", {"default": ""}),
+                "cache_threshold": (
+                    "FLOAT",
+                    {"default": 0.25, "min": 0.0, "max": 1.0, "step": 0.001},
+                ),
+                "start": (
+                    "FLOAT",
+                    {"default": 0.0, "step": 0.01, "max": 1.0, "min": 0.0},
+                ),
+                "end": (
+                    "FLOAT",
+                    {"default": 1.0, "step": 0.01, "max": 1.0, "min": 0.0},
+                ),
+                "max_consecutive_cache_hits": ("INT", {"default": -1, "min": -1}),
+            }
+        }
+
+    RETURN_TYPES = ("MODEL",)
+    FUNCTION = "patch"
+    CATEGORY = "Lightning"
+    TITLE = "Apply MBCache and Skip Blocks"
+
+    def patch(
+        self,
+        model: ModelPatcher,
+        skip_DoubleStreamBlocks: str,
+        skip_SingleStreamBlocks: str,
+        cache_threshold: float,
+        start: float,
+        end: float,
+        max_consecutive_cache_hits: int,
+    ) -> tuple[ModelPatcher,]:
+        cloned_model = model.clone()
+
+        # skip related
+        if "transformer_options" not in cloned_model.model_options:
+            cloned_model.model_options["transformer_options"] = {}
+        cloned_model.model_options["transformer_options"]["ds_skip_blocks"] = [
+            int(x) for x in skip_DoubleStreamBlocks.split(",") if x
+        ]
+        cloned_model.model_options["transformer_options"]["ss_skip_blocks"] = [
+            int(x) for x in skip_SingleStreamBlocks.split(",") if x
+        ]
+
+        dm: torch.nn.Module = cloned_model.get_model_object("diffusion_model")
+        if isinstance(dm, torch._dynamo.OptimizedModule):
+            dm: torch.nn.Module = getattr(dm, "_orig_mod", dm)
+
+        torch._dynamo.config.capture_scalar_outputs = True
+
+        # cache related
+        if max_consecutive_cache_hits >= 0 or start > 0 or end < 1:
+            model_sampling = model.get_model_object("model_sampling")
+            start_sigma, end_sigma = (
+                float(model_sampling.percent_to_sigma(i)) for i in (start, end)
+            )
+            consecutive_cache_hits = 0
+
+            def validator(use_cached, curr_timestep):
+                nonlocal consecutive_cache_hits
+                use_cached = (
+                    use_cached
+                    and end_sigma <= curr_timestep <= start_sigma
+                    and consecutive_cache_hits < max_consecutive_cache_hits
+                )
+                consecutive_cache_hits = consecutive_cache_hits + 1 if use_cached else 0
+                return use_cached
+
+        else:
+            validator = lambda *args: args[0]
+        cloned_model.model_options["transformer_options"]["validator"] = validator
+        cloned_model.model_options["transformer_options"][
+            "cache_threshold"
+        ] = cache_threshold
+        cloned_model.model_options["transformer_options"][
+            "previous_ds_comparisons"
+        ] = Cache()
+        cloned_model.model_options["transformer_options"][
+            "previous_ss_comparisons"
+        ] = Cache()
+        cloned_model.model_options["transformer_options"][
+            "previous_residuals"
+        ] = Cache()
+
+        dm.forward_orig = types.MethodType(mbcache_skip_forward_orig, dm)
+
+        return (cloned_model,)
+
+
 class CompileAndQuantizeModel:
     @classmethod
     def INPUT_TYPES(s):
@@ -291,6 +389,7 @@ class CompileAndQuantizeModel:
 NODE_CLASS_MAPPINGS = {
     "ApplyTeaCacheAndSkipBlocks": ApplyTeaCacheAndSkipBlocks,
     "ApplyFBCacheAndSkipBlocks": ApplyFBCacheAndSkipBlocks,
+    "ApplyMBCacheAndSkipBlocks": ApplyMBCacheAndSkipBlocks,
     "ApplySageAttention": ApplySageAttention,
     "CompileAndQuantizeModel": CompileAndQuantizeModel,
 }

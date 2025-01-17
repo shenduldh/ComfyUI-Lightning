@@ -5,6 +5,31 @@ from einops import rearrange
 import comfy.model_management
 
 
+def fixed_rope(pos: Tensor, dim: int, theta: int) -> Tensor:
+    assert dim % 2 == 0
+    if (
+        comfy.model_management.is_device_mps(pos.device)
+        or comfy.model_management.is_intel_xpu()
+    ):
+        device = torch.device("cpu")
+    else:
+        device = pos.device
+
+    scale = torch.linspace(
+        0, (dim - 2) / dim, steps=dim // 2, dtype=torch.float64, device=device
+    )
+    theta = torch.tensor(theta).to(dtype=scale.dtype, device=device)
+    omega = 1.0 / (theta**scale)
+    out = torch.einsum(
+        "...n,d->...nd", pos.to(dtype=torch.float32, device=device), omega
+    )
+    out = torch.stack(
+        [torch.cos(out), -torch.sin(out), torch.sin(out), torch.cos(out)], dim=-1
+    )
+    out = rearrange(out, "b n d (i j) -> b n d i j", i=2, j=2)
+    return out.to(dtype=torch.float32, device=pos.device)
+
+
 def has_affordable_memory(device: torch.device) -> bool:
     free_memory, _ = torch.cuda.mem_get_info(device)
     free_memory_gb = free_memory / (1024**3)
@@ -114,10 +139,11 @@ def skip_forward_orig(
     img = torch.cat((txt, img), 1)
 
     for i, block in enumerate(self.single_blocks):
+        #### skip blocks
+        if i in ss_skip_blocks:
+            continue
+
         if ("single_block", i) in blocks_replace:
-            #### skip blocks
-            if i in ss_skip_blocks:
-                continue
 
             def block_wrap(args):
                 out = {}
@@ -255,10 +281,11 @@ def teacache_skip_forward_orig(
         img = torch.cat((txt, img), 1)
 
         for i, block in enumerate(self.single_blocks):
+            ### skip blocks
+            if i in ss_skip_blocks:
+                continue
+
             if ("single_block", i) in blocks_replace:
-                ### skip blocks
-                if i in ss_skip_blocks:
-                    continue
 
                 def block_wrap(args):
                     out = {}
@@ -390,10 +417,11 @@ def fbcache_skip_forward_orig(
         img = torch.cat((txt, img), 1)
 
         for i, block in enumerate(self.single_blocks):
+            #### skip blocks
+            if i in ss_skip_blocks:
+                continue
+
             if ("single_block", i) in blocks_replace:
-                #### skip blocks
-                if i in ss_skip_blocks:
-                    continue
 
                 def block_wrap(args):
                     out = {}
@@ -428,17 +456,172 @@ def fbcache_skip_forward_orig(
     return img
 
 
-def fixed_rope(pos: Tensor, dim: int, theta: int) -> Tensor:
-    assert dim % 2 == 0
-    if comfy.model_management.is_device_mps(pos.device) or comfy.model_management.is_intel_xpu():
-        device = torch.device("cpu")
-    else:
-        device = pos.device
+class Cache:
+    def __init__(self):
+        self.cache = {}
 
-    scale = torch.linspace(0, (dim - 2) / dim, steps=dim//2, dtype=torch.float64, device=device)
-    theta = torch.tensor(theta).to(dtype=scale.dtype, device=device)
-    omega = 1.0 / (theta**scale)
-    out = torch.einsum("...n,d->...nd", pos.to(dtype=torch.float32, device=device), omega)
-    out = torch.stack([torch.cos(out), -torch.sin(out), torch.sin(out), torch.cos(out)], dim=-1)
-    out = rearrange(out, "b n d (i j) -> b n d i j", i=2, j=2)
-    return out.to(dtype=torch.float32, device=pos.device)
+    def set(self, key: str, obj):
+        self.cache[key] = obj
+
+    def get(self, key: str):
+        return self.cache[key]
+
+    def has(self, key: str):
+        return key in self.cache
+
+    def keys(self):
+        return self.cache.keys()
+
+
+def mbcache_skip_forward_orig(
+    self,
+    img: Tensor,
+    img_ids: Tensor,
+    txt: Tensor,
+    txt_ids: Tensor,
+    timesteps: Tensor,
+    y: Tensor,
+    guidance: Tensor = None,
+    control=None,
+    transformer_options={},
+    attn_mask: Tensor = None,
+) -> Tensor:
+    patches_replace = transformer_options.get("patches_replace", {})
+    cache_threshold = transformer_options.get("cache_threshold")
+    validate_use_cached = transformer_options.get("validator")
+    ds_skip_blocks = transformer_options.get("ds_skip_blocks")
+    ss_skip_blocks = transformer_options.get("ss_skip_blocks")
+    previous_ds_comparisons = transformer_options.get("previous_ds_comparisons")
+    previous_ss_comparisons = transformer_options.get("previous_ss_comparisons")
+    previous_residuals = transformer_options.get("previous_residuals")
+    use_cached = False
+
+    if img.ndim != 3 or txt.ndim != 3:
+        raise ValueError("Input img and txt tensors must have 3 dimensions.")
+
+    # running on sequences img
+    img = self.img_in(img)
+    vec = self.time_in(timestep_embedding(timesteps, 256).to(img.dtype))
+    if self.params.guidance_embed:
+        if guidance is None:
+            raise ValueError(
+                "Didn't get guidance strength for guidance distilled model."
+            )
+        vec = vec + self.guidance_in(timestep_embedding(guidance, 256).to(img.dtype))
+
+    vec = vec + self.vector_in(y[:, : self.params.vec_in_dim])
+    txt = self.txt_in(txt)
+
+    ids = torch.cat((txt_ids, img_ids), dim=1)
+    pe = self.pe_embedder(ids)
+
+    blocks_replace = patches_replace.get("dit", {})
+
+    for i, block in enumerate(self.double_blocks):
+        #### skip blocks
+        if i in ds_skip_blocks:
+            continue
+
+        if ("double_block", i) in blocks_replace:
+
+            def block_wrap(args):
+                out = {}
+                out["img"], out["txt"] = block(
+                    img=args["img"],
+                    txt=args["txt"],
+                    vec=args["vec"],
+                    pe=args["pe"],
+                    attn_mask=args.get("attn_mask"),
+                )
+                return out
+
+            out = blocks_replace[("double_block", i)](
+                {"img": img, "txt": txt, "vec": vec, "pe": pe, "attn_mask": attn_mask},
+                {"original_block": block_wrap},
+            )
+            txt = out["txt"]
+            img = out["img"]
+        else:
+            img, txt = block(img=img, txt=txt, vec=vec, pe=pe, attn_mask=attn_mask)
+
+        if control is not None:  # Controlnet
+            control_i = control.get("input")
+            if i < len(control_i):
+                add = control_i[i]
+                if add is not None:
+                    img += add
+
+        ### Cache
+        cache_key = f"double_stream_block{i}"
+        if previous_ds_comparisons.has(cache_key):
+            # torch._dynamo.graph_break()
+            use_cached = are_tensors_similar(
+                img, previous_ds_comparisons.get(cache_key), cache_threshold
+            )
+            use_cached = validate_use_cached(use_cached, timesteps.item())
+        previous_ds_comparisons.set(cache_key, img)
+        if use_cached:
+            break
+
+    if use_cached:
+        img += previous_residuals.get(cache_key)
+    else:
+        img = torch.cat((txt, img), 1)
+
+        for i, block in enumerate(self.single_blocks):
+            #### skip blocks
+            if i in ss_skip_blocks:
+                continue
+
+            if ("single_block", i) in blocks_replace:
+
+                def block_wrap(args):
+                    out = {}
+                    out["img"] = block(
+                        args["img"],
+                        vec=args["vec"],
+                        pe=args["pe"],
+                        attn_mask=args.get("attn_mask"),
+                    )
+                    return out
+
+                out = blocks_replace[("single_block", i)](
+                    {"img": img, "vec": vec, "pe": pe, "attn_mask": attn_mask},
+                    {"original_block": block_wrap},
+                )
+                img = out["img"]
+            else:
+                img = block(img, vec=vec, pe=pe, attn_mask=attn_mask)
+
+            if control is not None:  # Controlnet
+                control_o = control.get("output")
+                if i < len(control_o):
+                    add = control_o[i]
+                    if add is not None:
+                        img[:, txt.shape[1] :, ...] += add
+
+            ### Cache
+            cache_key = f"single_stream_block{i}"
+            if previous_ss_comparisons.has(cache_key):
+                # torch._dynamo.graph_break()
+                use_cached = are_tensors_similar(
+                    img, previous_ss_comparisons.get(cache_key), cache_threshold
+                )
+                use_cached = validate_use_cached(use_cached, timesteps.item())
+            previous_ss_comparisons.set(cache_key, img)
+            if use_cached:
+                break
+
+        if use_cached:
+            img += previous_residuals.get(cache_key)
+        else:
+            for k in previous_ss_comparisons.keys():
+                previous_residuals.set(k, img - previous_ss_comparisons.get(k))
+
+        img = img[:, txt.shape[1] :, ...]
+
+        for k in previous_ds_comparisons.keys():
+            previous_residuals.set(k, img - previous_ds_comparisons.get(k))
+
+    img = self.final_layer(img, vec)  # (N, T, patch_size ** 2 * out_channels)
+    return img

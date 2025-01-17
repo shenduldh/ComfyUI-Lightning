@@ -4,14 +4,14 @@ The codes are modified from [SageAttention](https://github.com/thu-ml/SageAttent
 
 I use follow tips to accelerate FLUX inference speed:
 
-1. Add `TeaCache` or `FBCache`;
+1. Add `TeaCache` or `FBCache` or `MBCache`;
 2. Skip some unnessasery blocks;
 3. Compile and quantize model;
 4. Use fast CuDNN attention kernels;
-5. Use SageAttention.
+5. Use SageAttention;
 6. Fix `AttributeError: 'SymInt' object has no attribute 'size'` to speed up recompilation after a resolution change.
 
-More details see above given repositories.
+`MBCache` extends `FBCache` and is applied to cache multiple blocks. More details see above given repositories.
 
 ## Usage
 
