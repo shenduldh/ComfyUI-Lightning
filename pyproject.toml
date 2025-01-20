@@ -1,7 +1,7 @@
 [project]
 name = "flux-lightning"
 description = "Accelerate FLUX inferencing speed for ComfyUI."
-version = "1.1.5"
+version = "1.1.6"
 license = { file = "LICENSE.txt" }
 
 [project.urls]
