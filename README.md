@@ -29,7 +29,7 @@ This repository integrates all the tricks I know to speed up Flux inference:
 
 ### For Sana
 
-<img align="left" src="./assets/sana_generation_results.png" alt="Sana Generation Results" width="80%"/>
+<img src="./assets/sana_generation_results.png" alt="Sana Generation Results" width="80%"/>
 
 1. Download Sana diffusion model from [Model Zoo](https://github.com/NVlabs/Sana/blob/main/asset/docs/model_zoo.md) and put the `.pth` file into `models/diffusion_models`;
 
