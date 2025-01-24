@@ -270,9 +270,6 @@ class ApplyMBCacheAndSkipBlocks:
         else:
             validator = lambda *args: args[0]
         cloned_model.model_options["transformer_options"]["validator"] = validator
-        cloned_model.model_options["transformer_options"][
-            "default_cache_threshold"
-        ] = default_cache_threshold
 
         thresholds = [default_cache_threshold] * len(dm.double_blocks)
         for i, t in enumerate(dsb_cache_thresholds.split(",")):
@@ -295,9 +292,9 @@ class ApplyMBCacheAndSkipBlocks:
         cloned_model.model_options["transformer_options"][
             "previous_ds_comparisons"
         ] = Cache()
-        cloned_model.model_options["transformer_options"][
-            "previous_ss_comparisons"
-        ] = Cache()
+        # cloned_model.model_options["transformer_options"][
+        #     "previous_ss_comparisons"
+        # ] = Cache()
         cloned_model.model_options["transformer_options"][
             "previous_residuals"
         ] = Cache()
