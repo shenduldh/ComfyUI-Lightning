@@ -77,6 +77,10 @@ class SanaCLIPLoader:
                 "model_name": (
                     os.listdir(os.path.join(folder_paths.models_dir, "text_encoders")),
                 ),
+                "max_length": (
+                    "INT",
+                    {"default": 300, "min": 1, "max": 9999, "step": 1},
+                ),
                 "device": (["cuda", "cpu"], {"default": "cuda"}),
                 "dtype": (["auto", "fp32", "fp16", "bf16"], {"default": "auto"}),
             }
@@ -87,7 +91,7 @@ class SanaCLIPLoader:
     CATEGORY = "Lightning/Sana"
     TITLE = "Load Sana CLIP"
 
-    def load(self, model_name, device, dtype):
+    def load(self, model_name: str, max_length: int, device, dtype):
         dtype = {
             "auto": model_management.text_encoder_dtype(),
             "fp32": torch.float32,
@@ -106,7 +110,13 @@ class SanaCLIPLoader:
             .eval()
         )
 
-        return ({"tokenizer": tokenizer, "text_encoder": text_encoder},)
+        return (
+            {
+                "tokenizer": tokenizer,
+                "text_encoder": text_encoder,
+                "max_length": max_length,
+            },
+        )
 
 
 class SanaVAELoader:
@@ -151,24 +161,30 @@ class SanaTextEncode:
     CATEGORY = "Lightning/Sana"
     TITLE = "Sana Text Encode"
 
-    def encode(self, text, GEMMA):
+    def encode(self, text: str, GEMMA):
         tokenizer = GEMMA["tokenizer"]
         text_encoder = GEMMA["text_encoder"]
-        model_max_length = 300
+        max_length = GEMMA["max_length"]
 
         with torch.no_grad():
             tokens = tokenizer(
                 [text],
-                max_length=model_max_length,
+                max_length=max_length,
                 padding="max_length",
                 truncation=True,
                 return_tensors="pt",
             ).to(text_encoder.device)
-            select_index = [0] + list(range(-model_max_length + 1, 0))
+            select_index = [0] + list(range(-max_length + 1, 0))
             embeddings = text_encoder(tokens.input_ids, tokens.attention_mask)[0]
             embeddings = embeddings[:, None][:, :, select_index]
-            embedding_masks = tokens.attention_mask[:, select_index].unsqueeze(-1)
-            embeddings = embeddings * embedding_masks
+            embedding_masks = (
+                tokens.attention_mask[:, select_index]
+                .unsqueeze(0)
+                .unsqueeze(-1)
+                .repeat(1, 1, 1, embeddings.size(-1))
+            )
+            embeddings *= embedding_masks
+            embeddings = torch.cat([embeddings, embedding_masks], dim=1)
 
         return ([[embeddings, {}]],)
 

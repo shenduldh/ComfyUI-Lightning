@@ -362,8 +362,9 @@ class SanaMS(Sana):
 
     ### wrap original `forward`
     def forward(self, x, timesteps, context, **kwargs):
-        mask = context[1].sum(dim=2) != 0
-        return self.forward_orig(x, timesteps, context, mask)
+        mask = context[1, 1:, :, 0].long()
+        y = context[:, :1, ...]
+        return self.forward_orig(x, timesteps, y, mask)
 
     def __call__(self, *args, **kwargs):
         """
