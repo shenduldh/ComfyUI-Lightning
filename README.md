@@ -21,6 +21,8 @@ This repository integrates all the tricks I know to speed up Flux inference:
 
 ### For Flux
 
+<img src="./assets/flux_generation_results.png" alt="Flux Generation Results" width="80%"/>
+
 You can use `XXCache`, `SageAttention`, and `torch.compile` with the following examples:
 
 <img src="./assets/FBCache.png" alt="FBCache" width="80%"/>
