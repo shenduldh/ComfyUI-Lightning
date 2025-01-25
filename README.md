@@ -21,11 +21,19 @@ This repository integrates all the tricks I know to speed up Flux inference:
 
 ### For Flux
 
-![fbcache_and_skip_blocks](./assets/FBCache.png)
+You can use `XXCache`, `SageAttention`, and `torch.compile` with the following examples:
 
-![teacache_and_skip_blocks](./assets/TeaCache.png)
+<img src="./assets/FBCache.png" alt="FBCache" width="80%"/>
+<img src="./assets/TeaCache.png" alt="TeaCache" width="80%"/>
+<img src="./assets/MBCache.png" alt="MBCache" width="80%"/>
 
-![teacache_and_skip_blocks](./assets/MBCache.png)
+More specific:
+
+1. Download Flux diffusion model and VAE image decoder from [FLUX.1-dev](https://huggingface.co/black-forest-labs/FLUX.1-dev) or [FLUX.1-schnell](https://huggingface.co/black-forest-labs/FLUX.1-schnell). Put the `flux1-dev.safetensors` or `flux1-schnell.safetensors` file into `models/diffusion_models` and the `ae.safetensors` file into `models/vae`;
+
+3. Download Flux text encoder from [flux_text_encoders](https://huggingface.co/comfyanonymous/flux_text_encoders) and put all the `.safetensors` files into `models/clip`;
+
+4. Run the example [workflow](./examples/flux_example_workflow.json).
 
 ### For Sana
 

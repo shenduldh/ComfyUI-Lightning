@@ -1,3 +1,4 @@
 sageattention
 xformers 
 torchao
+triton
