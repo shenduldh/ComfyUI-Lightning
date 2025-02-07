@@ -1,15 +1,9 @@
 import torch
-
-torch.set_float32_matmul_precision("high")
-torch.backends.cuda.matmul.allow_tf32 = True
-torch.backends.cudnn.allow_tf32 = True
-torch.backends.cudnn.benchmark = True
-torch.backends.cudnn.benchmark_limit = 20
-
 from torchao.quantization import float8_weight_only, int8_weight_only, quantize_
 from comfy.model_patcher import ModelPatcher
 from comfy.sd import VAE
 import types
+
 from .utils import (
     skip_forward_orig,
     teacache_skip_forward_orig,
@@ -19,6 +13,38 @@ from .utils import (
     has_affordable_memory,
     is_newer_than_ada_lovelace,
 )
+
+
+class ApplyFastCuDNNKernels:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "model": ("MODEL",),
+                "switch": ("BOOLEAN", {"default": True}),
+                "float32_matmul_precision": (["high", "medium"], {"default": "high"}),
+            }
+        }
+
+    RETURN_TYPES = ("MODEL",)
+    FUNCTION = "patch"
+    CATEGORY = "Lightning"
+    TITLE = "Apply Fast CuDNN Kernels"
+
+    def patch(self, model, switch, float32_matmul_precision):
+        if switch:
+            torch.set_float32_matmul_precision(float32_matmul_precision)
+            torch.backends.cuda.matmul.allow_tf32 = True
+            torch.backends.cudnn.allow_tf32 = True
+            torch.backends.cudnn.benchmark = True
+            torch.backends.cudnn.benchmark_limit = 20
+        else:
+            torch.set_float32_matmul_precision("highest")
+            torch.backends.cuda.matmul.allow_tf32 = False
+            torch.backends.cudnn.allow_tf32 = True
+            torch.backends.cudnn.benchmark = False
+            torch.backends.cudnn.benchmark_limit = 10
+        return (model,)
 
 
 class ApplySageAttention:
