@@ -15,6 +15,8 @@ This repository integrates all the tricks I know to speed up Flux inference:
 
 ## Updates
 
+- \[2025/2/27\] Add [ToCa](https://github.com/Shenyi-Z/ToCa).
+
 - \[2025/1/24\] Now support [Sana](https://github.com/NVlabs/Sana). Get your 1024*1024 images within 2s. All the codes are modified from [Sana](https://github.com/NVlabs/Sana).
 
 ## Usage
