@@ -64,7 +64,7 @@ More specific:
     pip install -e .
     ```
 
-2. If you do not have a hyperparameter file, you should perform a few rounds of quality fine-tuning to get one first. You just need to open the `enable_tuning_mode` of the node `Apply SpargeAttn` and perform the generation. For example, generate 50 steps of 512*512 images at 10 different prompts (very time-consuming);
+2. If you do not have a hyperparameter file, you should perform a few rounds of quality fine-tuning to get one first. You just need to open the `enable_tuning_mode` of the node `Apply SpargeAttn` and perform the generation. For example, generate 50-step 512*512 images at 10 different prompts (very time-consuming);
 
     <img src="./assets/spargeattn_autotune.png" alt="SpargeAttn Autotune" width="40%"/>
 
