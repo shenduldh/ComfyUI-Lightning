@@ -3,6 +3,8 @@ from torchao.quantization import float8_weight_only, int8_weight_only, quantize_
 from comfy.model_patcher import ModelPatcher
 from comfy.sd import VAE
 import types
+import folder_paths
+from typing import Optional
 
 from .utils import (
     skip_forward_orig,
@@ -62,16 +64,23 @@ class ApplySageAttention:
     CATEGORY = "Lightning"
     TITLE = "Apply SageAttention"
 
+    def __init__(self):
+        self.orig_attn = None
+
     def patch(self, model: ModelPatcher, use_SageAttention: bool):
         try:
+            from comfy.ldm.flux import math
+
             if use_SageAttention:
                 from sageattention import sageattn
                 from comfy.ldm.modules.attention import attention_sage
                 from comfy.ldm.modules import attention
-                from comfy.ldm.flux import math
 
-                attention.sageattn = sageattn
-                math.optimized_attention = attention_sage
+                self.orig_attn = getattr(math, "optimized_attention")
+                setattr(attention, "sageattn", sageattn)
+                setattr(math, "optimized_attention", attention_sage)
+            elif self.orig_attn is not None:
+                setattr(math, "optimized_attention", self.orig_attn)
         except:
             pass
 

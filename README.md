@@ -4,16 +4,18 @@
 
 This repository integrates all the tricks I know to speed up Flux inference:
 
-1. Use `TeaCache` or `FBCache` or `MBCache`;
+1. Use `TeaCache` or `FBCache` or `MBCache` or `ToCa`;
 2. Skip some unnessasery blocks;
 3. Compile and quantize model;
 4. Use fast CuDNN attention kernels;
-5. Use SageAttention;
+5. Use `SageAttention` or `SpargeAttn`;
 6. Fix `AttributeError: 'SymInt' object has no attribute 'size'` to speed up recompilation after resolution changing.
 
 `MBCache` extends `FBCache` and is applied to cache multiple blocks. The codes are modified from [SageAttention](https://github.com/thu-ml/SageAttention), [ComfyUI-TeaCache](https://github.com/welltop-cn/ComfyUI-TeaCache), [comfyui-flux-accelerator](https://github.com/discus0434/comfyui-flux-accelerator) and [Comfy-WaveSpeed](https://github.com/chengzeyi/Comfy-WaveSpeed). More details see above given repositories.
 
 ## Updates
+
+- \[2025/3/10\] Add [SpargeAttn](https://github.com/thu-ml/SpargeAttn). For more details, see [Usage](#for-spargeattn).
 
 - \[2025/2/27\] Add [ToCa](https://github.com/Shenyi-Z/ToCa).
 
@@ -50,3 +52,31 @@ More specific:
 3. Download DCAE image decoder from [mit-han-lab/dc-ae-f32c32-sana-1.0](https://huggingface.co/mit-han-lab/dc-ae-f32c32-sana-1.0) and put the `.safetensors` file into `models/vae`;
 
 4. Run the example [workflow](./examples/sana_example_workflow.json).
+
+
+### For SpargeAttn
+
+1. First you should follow the steps below to install `SpargeAttn`. If you have problems installing it, see the original [repository](https://github.com/thu-ml/SpargeAttn);
+
+    ```bash
+    git clone https://github.com/thu-ml/SpargeAttn.git
+    cd ./SpargeAttn
+    pip install -e .
+    ```
+
+2. If you do not have a hyperparameter file, you should perform a few rounds of quality fine-tuning to get one first. You just need to open the `enable_tuning_mode` of the node `Apply SpargeAttn` and perform the generation. For example, generate 50 steps of 512*512 images at 10 different prompts (very time-consuming);
+
+    <img src="./assets/spargeattn_autotune.png" alt="SpargeAttn Autotune" width="30%"/>
+
+    > - The `skip_DoubleStreamBlocks` and `skip_SingleStreamBlocks` arguments are used to skip certain blocks that do not require the use of `SpargeAttn`, mainly to work with `TeaCache` and `FBCache`.
+    > - If you have a well-tuned hyperparameter file, feel free to share it.
+
+3. Turn off `enable_tuning_mode` and use the `Save Finetuned SpargeAttn Hyperparams` node to save your hyperparameter file;
+
+    <img src="./assets/spargeattn_saving.png" alt="SpargeAttn Saving" width="75%"/>
+
+4. Remove or disable the `Save Finetuned SpargeAttn Hyperparams` node and place the saved hyperparameter file in the `models/checkpoints` folder. Load this hyperparameter file in the `Apply SpargeAttn` node;
+
+    <img src="./assets/spargeattn_loading.png" alt="SpargeAttn Loading" width="75%"/>
+
+5. Enjoy yourself.
