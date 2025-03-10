@@ -66,17 +66,17 @@ More specific:
 
 2. If you do not have a hyperparameter file, you should perform a few rounds of quality fine-tuning to get one first. You just need to open the `enable_tuning_mode` of the node `Apply SpargeAttn` and perform the generation. For example, generate 50 steps of 512*512 images at 10 different prompts (very time-consuming);
 
-    <img src="./assets/spargeattn_autotune.png" alt="SpargeAttn Autotune" width="30%"/>
+    <img src="./assets/spargeattn_autotune.png" alt="SpargeAttn Autotune" width="40%"/>
 
     > - The `skip_DoubleStreamBlocks` and `skip_SingleStreamBlocks` arguments are used to skip certain blocks that do not require the use of `SpargeAttn`, mainly to work with `TeaCache` and `FBCache`.
     > - If you have a well-tuned hyperparameter file, feel free to share it.
 
 3. Turn off `enable_tuning_mode` and use the `Save Finetuned SpargeAttn Hyperparams` node to save your hyperparameter file;
 
-    <img src="./assets/spargeattn_saving.png" alt="SpargeAttn Saving" width="75%"/>
+    <img src="./assets/spargeattn_saving.png" alt="SpargeAttn Saving" width="100%"/>
 
 4. Remove or disable the `Save Finetuned SpargeAttn Hyperparams` node and place the saved hyperparameter file in the `models/checkpoints` folder. Load this hyperparameter file in the `Apply SpargeAttn` node;
 
-    <img src="./assets/spargeattn_loading.png" alt="SpargeAttn Loading" width="75%"/>
+    <img src="./assets/spargeattn_loading.png" alt="SpargeAttn Loading" width="100%"/>
 
 5. Enjoy yourself.
