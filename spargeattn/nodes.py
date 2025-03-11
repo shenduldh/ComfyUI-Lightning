@@ -45,15 +45,15 @@ class ApplySpargeAttn:
                 spargeattn_DoubleStreamBlock_forward,
                 spargeattn_SingleStreamBlock_forward,
                 load_sparse_attention_state_dict,
+                SparseAttentionMeansim,
             )
-            from spas_sage_attn.autotune import SparseAttentionMeansim
 
             dm: Flux = cloned_model.get_model_object("diffusion_model")
             if isinstance(dm, torch._dynamo.OptimizedModule):
                 dm: Flux = getattr(dm, "_orig_mod", dm)
 
             skip_DoubleStreamBlocks = [
-                int(i.strip()) for i in skip_DoubleStreamBlocks.split(",")
+                int(i.strip()) for i in skip_DoubleStreamBlocks.split(",") if i.strip()
             ]
             for idx, block in enumerate(dm.double_blocks):  # 19
                 if idx in skip_DoubleStreamBlocks:
@@ -71,7 +71,7 @@ class ApplySpargeAttn:
                 block.spargeattn.enable_tuning_mode = enable_tuning_mode
 
             skip_SingleStreamBlocks = [
-                int(i.strip()) for i in skip_SingleStreamBlocks.split(",")
+                int(i.strip()) for i in skip_SingleStreamBlocks.split(",") if i.strip()
             ]
             for idx, block in enumerate(dm.single_blocks):  # 38
                 if idx in skip_SingleStreamBlocks:
@@ -123,7 +123,7 @@ class SaveSpargeAttnHyperparams:
 
     def save(self, model: ModelPatcher, filename_prefix: str):
         try:
-            from spas_sage_attn.autotune import extract_sparse_attention_state_dict
+            from .utils import extract_sparse_attention_state_dict
 
             dm: Flux = model.get_model_object("diffusion_model")
             if isinstance(dm, torch._dynamo.OptimizedModule):

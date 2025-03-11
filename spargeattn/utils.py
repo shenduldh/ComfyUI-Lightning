@@ -2,7 +2,10 @@ import torch
 from torch import Tensor, nn
 from comfy.ldm.flux.math import apply_rope
 
-from spas_sage_attn.autotune import SparseAttentionMeansim
+from spas_sage_attn.autotune import (
+    SparseAttentionMeansim,
+    extract_sparse_attention_state_dict,
+)
 
 
 def load_sparse_attention_state_dict(model, saved_state_dict, verbose=False):

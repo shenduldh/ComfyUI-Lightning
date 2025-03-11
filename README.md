@@ -56,6 +56,8 @@ More specific:
 
 ### For SpargeAttn
 
+SpargeAttn is an attention acceleration method based on SageAttention, which requires hyperparameter tuning before using. The tuning process is shown in the following steps:
+
 1. First you should follow the steps below to install `SpargeAttn`. If you have problems installing it, see the original [repository](https://github.com/thu-ml/SpargeAttn);
 
     ```bash
@@ -80,3 +82,5 @@ More specific:
     <img src="./assets/spargeattn_loading.png" alt="SpargeAttn Loading" width="100%"/>
 
 5. Enjoy yourself.
+
+To make tuning hyperparameters easier, I've provided an example [workflow](./examples/flux_spargeattn_tuning_example_workflow.json) here. This workflow defaults to generating a 50-step 512*512 image for each of the 10 preset prompts (which can be modified as you see fit). Click on the `Queue` button to start tuning. Of course, you need to make sure you have the right environment before you start. Again, this process is very time consuming.

@@ -1,0 +1,1623 @@
+{
+  "last_node_id": 65,
+  "last_link_id": 154,
+  "nodes": [
+    {
+      "id": 44,
+      "type": "Text String",
+      "pos": [
+        2916.92919921875,
+        3447.397705078125
+      ],
+      "size": [
+        315,
+        190
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "TEXT",
+          "type": "STRING",
+          "links": [
+            54
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "TEXT_B",
+          "type": "STRING",
+          "links": [
+            55
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "TEXT_C",
+          "type": "STRING",
+          "links": [
+            56
+          ],
+          "slot_index": 2
+        },
+        {
+          "name": "TEXT_D",
+          "type": "STRING",
+          "links": [
+            57
+          ],
+          "slot_index": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Text String"
+      },
+      "widgets_values": [
+        "A golden-drenched alien jungle at dawn, where crystalline trees emit soft bioluminescence, floating islands hover above a mercury river, and translucent-winged creatures with humanoid faces glide between violet-hued flowers. Include impossible architecture carved into amber cliffs, with a distant black hole distorting the horizon.",
+        "Rain-soaked neon metropolis at midnight, featuring towering skyscrapers wrapped in holographic advertisements, flying vehicles leaving light trails through smog-filled air. A bustling street market below sells cybernetic implants, with augmented humans and robots bargaining under glowing paper lanterns and neon kanji signs.",
+        "A lavish 16th-century Venetian masquerade ball in a marble palace, nobles in intricate brocade gowns and feathered masks dancing beneath frescoed ceilings. Sunlight streams through stained glass onto a banquet table overflowing with roasted peacocks, golden goblets, and exotic fruits brought by caravels from the New World.",
+        "A sterile lunar research station's observation lounge: curved white furniture floating above magnetic floors, transparent dome revealing cratered landscapes under Earth's blue glow. Sparse decor includes a single bonsai tree in zero-gravity containment and holographic star charts projecting constellations onto minimalist gray walls."
+      ]
+    },
+    {
+      "id": 26,
+      "type": "UNETLoader",
+      "pos": [
+        2837.7734375,
+        2997.1875
+      ],
+      "size": [
+        310,
+        82
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            153
+          ],
+          "slot_index": 0,
+          "shape": 3,
+          "label": "MODEL"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "UNETLoader"
+      },
+      "widgets_values": [
+        "flux1-dev-fp8.safetensors",
+        "fp8_e4m3fn_fast"
+      ]
+    },
+    {
+      "id": 27,
+      "type": "VAELoader",
+      "pos": [
+        2827.0986328125,
+        2712.548095703125
+      ],
+      "size": [
+        315,
+        58
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            67
+          ],
+          "slot_index": 0,
+          "shape": 3,
+          "label": "VAE"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VAELoader"
+      },
+      "widgets_values": [
+        "ae.safetensors"
+      ]
+    },
+    {
+      "id": 15,
+      "type": "DualCLIPLoader",
+      "pos": [
+        2878.93994140625,
+        2831.234130859375
+      ],
+      "size": [
+        265.7513427734375,
+        106
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            71
+          ],
+          "slot_index": 0,
+          "shape": 3,
+          "label": "CLIP"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DualCLIPLoader"
+      },
+      "widgets_values": [
+        "clip_l.safetensors",
+        "t5xxl_fp8_e4m3fn.safetensors",
+        "flux",
+        "default"
+      ]
+    },
+    {
+      "id": 5,
+      "type": "KSamplerSelect",
+      "pos": [
+        4031.33837890625,
+        2731.69677734375
+      ],
+      "size": [
+        315,
+        58
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "SAMPLER",
+          "type": "SAMPLER",
+          "links": [
+            4
+          ],
+          "shape": 3,
+          "label": "SAMPLER"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "KSamplerSelect"
+      },
+      "widgets_values": [
+        "euler"
+      ]
+    },
+    {
+      "id": 22,
+      "type": "ModelSamplingFlux",
+      "pos": [
+        3683.709228515625,
+        3039.34814453125
+      ],
+      "size": [
+        315,
+        130
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 154,
+          "slot_index": 0
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "link": 25,
+          "slot_index": 1,
+          "widget": {
+            "name": "width"
+          }
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "link": 26,
+          "slot_index": 2,
+          "widget": {
+            "name": "height"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            7,
+            27
+          ],
+          "slot_index": 0,
+          "shape": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ModelSamplingFlux"
+      },
+      "widgets_values": [
+        1.1500000000000001,
+        0.5,
+        512,
+        512
+      ]
+    },
+    {
+      "id": 2,
+      "type": "RandomNoise",
+      "pos": [
+        3683.92333984375,
+        2899.591796875
+      ],
+      "size": [
+        315,
+        82
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "NOISE",
+          "type": "NOISE",
+          "links": [
+            2
+          ],
+          "shape": 3,
+          "label": "NOISE"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "RandomNoise"
+      },
+      "widgets_values": [
+        156689069090678,
+        "randomize"
+      ]
+    },
+    {
+      "id": 13,
+      "type": "EmptySD3LatentImage",
+      "pos": [
+        3433.46337890625,
+        2736.291259765625
+      ],
+      "size": [
+        210,
+        80
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "width",
+          "type": "INT",
+          "link": 17,
+          "widget": {
+            "name": "width"
+          }
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "link": 18,
+          "widget": {
+            "name": "height"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            6
+          ],
+          "slot_index": 0,
+          "shape": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "EmptySD3LatentImage"
+      },
+      "widgets_values": [
+        512,
+        512,
+        1
+      ]
+    },
+    {
+      "id": 16,
+      "type": "FluxGuidance",
+      "pos": [
+        3434.7802734375,
+        2870.14794921875
+      ],
+      "size": [
+        211.60000610351562,
+        80
+      ],
+      "flags": {},
+      "order": 17,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "conditioning",
+          "type": "CONDITIONING",
+          "link": 20
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            8
+          ],
+          "slot_index": 0,
+          "shape": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "FluxGuidance"
+      },
+      "widgets_values": [
+        3
+      ],
+      "color": "#233",
+      "bgcolor": "#355"
+    },
+    {
+      "id": 6,
+      "type": "CLIPTextEncode",
+      "pos": [
+        3194.523193359375,
+        3009.93017578125
+      ],
+      "size": [
+        285.6000061035156,
+        92.82482147216797
+      ],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 71
+        },
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 70,
+          "widget": {
+            "name": "text"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            20
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "CLIP Text Encode (Positive Prompt)",
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "Pixar style illustration. Three dogs are running in the sky fulling stars."
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 21,
+      "type": "VAEDecode",
+      "pos": [
+        3688.32666015625,
+        3228.65234375
+      ],
+      "size": [
+        250,
+        46
+      ],
+      "flags": {},
+      "order": 21,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 22,
+          "label": "samples"
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 67,
+          "label": "vae"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            115
+          ],
+          "slot_index": 0,
+          "label": "IMAGE"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VAEDecode"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 1,
+      "type": "SplitSigmas",
+      "pos": [
+        4035.54736328125,
+        2858.10986328125
+      ],
+      "size": [
+        315,
+        78
+      ],
+      "flags": {},
+      "order": 18,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "sigmas",
+          "type": "SIGMAS",
+          "link": 1,
+          "label": "sigmas"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "high_sigmas",
+          "type": "SIGMAS",
+          "links": [],
+          "slot_index": 0,
+          "shape": 3,
+          "label": "high_sigmas"
+        },
+        {
+          "name": "low_sigmas",
+          "type": "SIGMAS",
+          "links": [
+            5
+          ],
+          "slot_index": 1,
+          "shape": 3,
+          "label": "low_sigmas"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "SplitSigmas"
+      },
+      "widgets_values": [
+        0
+      ]
+    },
+    {
+      "id": 4,
+      "type": "BasicGuider",
+      "pos": [
+        4041.8369140625,
+        3000.2958984375
+      ],
+      "size": [
+        250,
+        50
+      ],
+      "flags": {},
+      "order": 19,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 7,
+          "slot_index": 0,
+          "label": "model"
+        },
+        {
+          "name": "conditioning",
+          "type": "CONDITIONING",
+          "link": 8,
+          "slot_index": 1,
+          "label": "conditioning"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "GUIDER",
+          "type": "GUIDER",
+          "links": [
+            3
+          ],
+          "slot_index": 0,
+          "shape": 3,
+          "label": "GUIDER"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "BasicGuider"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 3,
+      "type": "SamplerCustomAdvanced",
+      "pos": [
+        4045.999755859375,
+        3114.15673828125
+      ],
+      "size": [
+        245.7446746826172,
+        106
+      ],
+      "flags": {},
+      "order": 20,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "noise",
+          "type": "NOISE",
+          "link": 2,
+          "slot_index": 0,
+          "label": "noise"
+        },
+        {
+          "name": "guider",
+          "type": "GUIDER",
+          "link": 3,
+          "slot_index": 1,
+          "label": "guider"
+        },
+        {
+          "name": "sampler",
+          "type": "SAMPLER",
+          "link": 4,
+          "slot_index": 2,
+          "label": "sampler"
+        },
+        {
+          "name": "sigmas",
+          "type": "SIGMAS",
+          "link": 5,
+          "slot_index": 3,
+          "label": "sigmas"
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 6,
+          "slot_index": 4,
+          "label": "latent_image"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "LATENT",
+          "links": [
+            22
+          ],
+          "slot_index": 0,
+          "shape": 3,
+          "label": "output"
+        },
+        {
+          "name": "denoised_output",
+          "type": "LATENT",
+          "links": null,
+          "shape": 3,
+          "label": "denoised_output"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "SamplerCustomAdvanced"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 55,
+      "type": "Text String",
+      "pos": [
+        2918.936279296875,
+        3706.653564453125
+      ],
+      "size": [
+        315,
+        190
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "TEXT",
+          "type": "STRING",
+          "links": [
+            58
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "TEXT_B",
+          "type": "STRING",
+          "links": [
+            59
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "TEXT_C",
+          "type": "STRING",
+          "links": [
+            60
+          ],
+          "slot_index": 2
+        },
+        {
+          "name": "TEXT_D",
+          "type": "STRING",
+          "links": [
+            61
+          ],
+          "slot_index": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Text String"
+      },
+      "widgets_values": [
+        "Kaleidoscopic explosion of morphing geometric patterns in fluorescent colors: shifting tessellated triangles dissolve into liquid chrome spheres, intersecting with organic brushstrokes resembling neural networks. Include hidden animal silhouettes within the chaos and optical illusions creating false depth perception.",
+        "Jurassic-era swamp at twilight: towering sequoia-sized ferns dripping with morning dew, a brachiosaurus herd wading through misty lagoons while pterodactyls circle volcanic peaks. Highlight iridescent insect swarms around glowing mushrooms and a hidden cave revealing primitive cave paintings under flickering bioluminescent moss.",
+        "Victorian-era inventor's workshop filled with brass gadgets: clockwork automatons polishing copper pipes, aether-powered engines emitting green steam, and blueprints floating in anti-gravity fields. Include a massive telescope protruding through a glass ceiling revealing airships docking at floating brass platforms against stormy skies.",
+        "Frozen battlefield at Ragnarök's climax: ice giants clashing with flaming Valkyries atop a glacier cracked by Thor's hammer. A spectral longship sails through aurora-lit skies while Fenrir's chains snap amidst volcanic eruptions. Include rune-carved monoliths emitting protective barriers and frost-covered dwarf-forged weapons."
+      ]
+    },
+    {
+      "id": 56,
+      "type": "Text String",
+      "pos": [
+        2918.5517578125,
+        3968.494384765625
+      ],
+      "size": [
+        317.62200927734375,
+        190
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "TEXT",
+          "type": "STRING",
+          "links": [
+            85
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "TEXT_B",
+          "type": "STRING",
+          "links": [
+            79,
+            86
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "TEXT_C",
+          "type": "STRING",
+          "links": [],
+          "slot_index": 2
+        },
+        {
+          "name": "TEXT_D",
+          "type": "STRING",
+          "links": [],
+          "slot_index": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Text String"
+      },
+      "widgets_values": [
+        "Wakanda-inspired techno-organic settlement: solar-paneled baobab trees housing vertical farms, drone herders guiding augmented cattle across golden savannahs. Terraced adobe houses with living algae walls surround a central plaza where holographic elders debate under a floating water-harvesting nano-mesh canopy.",
+        "Soft-focus mountain valley where pastel waterfalls flow upward into cotton-candy clouds. Watercolor-style cherry blossom trees with petals forming shifting animal shapes, blended with ink-wash mountains reflecting in mirror-still lakes. Include translucent spirit figures dancing in dappled sunlight and impressionistic brushstrokes suggesting hidden portals.",
+        "",
+        ""
+      ]
+    },
+    {
+      "id": 51,
+      "type": "easy anythingIndexSwitch",
+      "pos": [
+        3290.6953125,
+        3448.537353515625
+      ],
+      "size": [
+        210,
+        238
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "value0",
+          "type": "*",
+          "link": 54,
+          "shape": 7
+        },
+        {
+          "name": "value1",
+          "type": "*",
+          "link": 55,
+          "shape": 7
+        },
+        {
+          "name": "value2",
+          "type": "*",
+          "link": 56
+        },
+        {
+          "name": "value3",
+          "type": "*",
+          "link": 57
+        },
+        {
+          "name": "value4",
+          "type": "*",
+          "link": 58
+        },
+        {
+          "name": "value5",
+          "type": "*",
+          "link": 59
+        },
+        {
+          "name": "value6",
+          "type": "*",
+          "link": 60
+        },
+        {
+          "name": "value7",
+          "type": "*",
+          "link": 61
+        },
+        {
+          "name": "value8",
+          "type": "*",
+          "link": 85
+        },
+        {
+          "name": "value9",
+          "type": "*",
+          "link": 86
+        },
+        {
+          "name": "index",
+          "type": "INT",
+          "link": 108,
+          "widget": {
+            "name": "index"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "value",
+          "type": "*",
+          "links": [
+            70
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "easy anythingIndexSwitch"
+      },
+      "widgets_values": [
+        0
+      ]
+    },
+    {
+      "id": 65,
+      "type": "easy forLoopEnd",
+      "pos": [
+        3554.689453125,
+        3453.738037109375
+      ],
+      "size": [
+        178,
+        86
+      ],
+      "flags": {},
+      "order": 23,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "flow",
+          "type": "FLOW_CONTROL",
+          "link": 146,
+          "shape": 5
+        },
+        {
+          "name": "initial_value1",
+          "type": "*",
+          "link": 148,
+          "shape": 7
+        },
+        {
+          "name": "initial_value2",
+          "type": "*",
+          "link": 150
+        },
+        {
+          "name": "initial_value3",
+          "type": "*",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "value1",
+          "type": "*",
+          "links": [
+            149
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "value2",
+          "type": "*",
+          "links": [
+            151
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "value3",
+          "type": "*",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "easy forLoopEnd"
+      },
+      "widgets_values": [],
+      "color": "#223",
+      "bgcolor": "#335"
+    },
+    {
+      "id": 63,
+      "type": "easy batchAnything",
+      "pos": [
+        3547.363037109375,
+        3615.14794921875
+      ],
+      "size": [
+        210,
+        46
+      ],
+      "flags": {},
+      "order": 22,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "any_1",
+          "type": "*",
+          "link": 115
+        },
+        {
+          "name": "any_2",
+          "type": "*",
+          "link": 118
+        }
+      ],
+      "outputs": [
+        {
+          "name": "batch",
+          "type": "*",
+          "links": [
+            148
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "easy batchAnything"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 38,
+      "type": "SaveSpargeAttnHyperparams",
+      "pos": [
+        3789.1875,
+        3447.665771484375
+      ],
+      "size": [
+        466.1999816894531,
+        58
+      ],
+      "flags": {},
+      "order": 25,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 151
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "SaveSpargeAttnHyperparams"
+      },
+      "widgets_values": [
+        "spargeattn_hyperparams"
+      ]
+    },
+    {
+      "id": 61,
+      "type": "PreviewImage",
+      "pos": [
+        3796.503173828125,
+        3574.6787109375
+      ],
+      "size": [
+        341.09991455078125,
+        287.171875
+      ],
+      "flags": {},
+      "order": 24,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 149
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "PreviewImage"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 17,
+      "type": "PrimitiveNode",
+      "pos": [
+        3193.41162109375,
+        2737.743408203125
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "INT",
+          "type": "INT",
+          "links": [
+            17,
+            25
+          ],
+          "slot_index": 0,
+          "widget": {
+            "name": "width"
+          }
+        }
+      ],
+      "title": "width",
+      "properties": {
+        "Run widget replace on values": false
+      },
+      "widgets_values": [
+        512,
+        "fixed"
+      ],
+      "color": "#323",
+      "bgcolor": "#535"
+    },
+    {
+      "id": 18,
+      "type": "PrimitiveNode",
+      "pos": [
+        3194.1640625,
+        2867.775146484375
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "INT",
+          "type": "INT",
+          "links": [
+            18,
+            26
+          ],
+          "slot_index": 0,
+          "widget": {
+            "name": "height"
+          }
+        }
+      ],
+      "title": "height",
+      "properties": {
+        "Run widget replace on values": false
+      },
+      "widgets_values": [
+        512,
+        "fixed"
+      ],
+      "color": "#323",
+      "bgcolor": "#535"
+    },
+    {
+      "id": 64,
+      "type": "ApplySpargeAttn",
+      "pos": [
+        2833.23681640625,
+        3141.427490234375
+      ],
+      "size": [
+        315,
+        130
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 153
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            150,
+            154
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ApplySpargeAttn"
+      },
+      "widgets_values": [
+        true,
+        null,
+        "",
+        ""
+      ]
+    },
+    {
+      "id": 23,
+      "type": "BasicScheduler",
+      "pos": [
+        3683.923583984375,
+        2735.571533203125
+      ],
+      "size": [
+        315,
+        106
+      ],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 27,
+          "slot_index": 0,
+          "label": "model"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "SIGMAS",
+          "type": "SIGMAS",
+          "links": [
+            1
+          ],
+          "slot_index": 0,
+          "shape": 3,
+          "label": "SIGMAS"
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "BasicScheduler"
+      },
+      "widgets_values": [
+        "beta",
+        50,
+        1
+      ]
+    },
+    {
+      "id": 48,
+      "type": "easy forLoopStart",
+      "pos": [
+        3288.435546875,
+        3753.75732421875
+      ],
+      "size": [
+        210,
+        118
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "initial_value1",
+          "type": "*",
+          "link": null,
+          "shape": 7
+        },
+        {
+          "name": "initial_value2",
+          "type": "*",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "flow",
+          "type": "FLOW_CONTROL",
+          "links": [
+            146
+          ],
+          "slot_index": 0,
+          "shape": 5
+        },
+        {
+          "name": "index",
+          "type": "INT",
+          "links": [
+            108
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "value1",
+          "type": "*",
+          "links": [
+            118
+          ],
+          "slot_index": 2
+        },
+        {
+          "name": "value2",
+          "type": "*",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "easy forLoopStart"
+      },
+      "widgets_values": [
+        10
+      ],
+      "color": "#223",
+      "bgcolor": "#335"
+    }
+  ],
+  "links": [
+    [
+      1,
+      23,
+      0,
+      1,
+      0,
+      "SIGMAS"
+    ],
+    [
+      2,
+      2,
+      0,
+      3,
+      0,
+      "NOISE"
+    ],
+    [
+      3,
+      4,
+      0,
+      3,
+      1,
+      "GUIDER"
+    ],
+    [
+      4,
+      5,
+      0,
+      3,
+      2,
+      "SAMPLER"
+    ],
+    [
+      5,
+      1,
+      1,
+      3,
+      3,
+      "SIGMAS"
+    ],
+    [
+      6,
+      13,
+      0,
+      3,
+      4,
+      "LATENT"
+    ],
+    [
+      7,
+      22,
+      0,
+      4,
+      0,
+      "MODEL"
+    ],
+    [
+      8,
+      16,
+      0,
+      4,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      17,
+      17,
+      0,
+      13,
+      0,
+      "INT"
+    ],
+    [
+      18,
+      18,
+      0,
+      13,
+      1,
+      "INT"
+    ],
+    [
+      20,
+      6,
+      0,
+      16,
+      0,
+      "CONDITIONING"
+    ],
+    [
+      22,
+      3,
+      0,
+      21,
+      0,
+      "LATENT"
+    ],
+    [
+      25,
+      17,
+      0,
+      22,
+      1,
+      "INT"
+    ],
+    [
+      26,
+      18,
+      0,
+      22,
+      2,
+      "INT"
+    ],
+    [
+      27,
+      22,
+      0,
+      23,
+      0,
+      "MODEL"
+    ],
+    [
+      54,
+      44,
+      0,
+      51,
+      -2,
+      "*"
+    ],
+    [
+      55,
+      44,
+      1,
+      51,
+      -1,
+      "*"
+    ],
+    [
+      56,
+      44,
+      2,
+      51,
+      0,
+      "*"
+    ],
+    [
+      57,
+      44,
+      3,
+      51,
+      1,
+      "*"
+    ],
+    [
+      58,
+      55,
+      0,
+      51,
+      2,
+      "*"
+    ],
+    [
+      59,
+      55,
+      1,
+      51,
+      3,
+      "*"
+    ],
+    [
+      60,
+      55,
+      2,
+      51,
+      4,
+      "*"
+    ],
+    [
+      61,
+      55,
+      3,
+      51,
+      5,
+      "*"
+    ],
+    [
+      67,
+      27,
+      0,
+      21,
+      1,
+      "VAE"
+    ],
+    [
+      70,
+      51,
+      0,
+      6,
+      1,
+      "STRING"
+    ],
+    [
+      71,
+      15,
+      0,
+      6,
+      0,
+      "CLIP"
+    ],
+    [
+      79,
+      56,
+      1,
+      51,
+      9,
+      "*"
+    ],
+    [
+      85,
+      56,
+      0,
+      51,
+      8,
+      "*"
+    ],
+    [
+      86,
+      56,
+      1,
+      51,
+      9,
+      "*"
+    ],
+    [
+      108,
+      48,
+      1,
+      51,
+      10,
+      "INT"
+    ],
+    [
+      115,
+      21,
+      0,
+      63,
+      0,
+      "*"
+    ],
+    [
+      118,
+      48,
+      2,
+      63,
+      1,
+      "*"
+    ],
+    [
+      146,
+      48,
+      0,
+      65,
+      0,
+      "FLOW_CONTROL"
+    ],
+    [
+      148,
+      63,
+      0,
+      65,
+      1,
+      "*"
+    ],
+    [
+      149,
+      65,
+      0,
+      61,
+      0,
+      "IMAGE"
+    ],
+    [
+      150,
+      64,
+      0,
+      65,
+      2,
+      "*"
+    ],
+    [
+      151,
+      65,
+      1,
+      38,
+      0,
+      "MODEL"
+    ],
+    [
+      153,
+      26,
+      0,
+      64,
+      0,
+      "MODEL"
+    ],
+    [
+      154,
+      64,
+      0,
+      22,
+      0,
+      "MODEL"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "Flux Pipeline",
+      "bounding": [
+        2800.6484375,
+        2614.6806640625,
+        1570.85107421875,
+        685.4942626953125
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 2,
+      "title": "Finetune Pipeline",
+      "bounding": [
+        2804.13525390625,
+        3344.064453125,
+        1565.441650390625,
+        850.3910522460938
+      ],
+      "color": "#8A8",
+      "font_size": 24,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.6303940863129087,
+      "offset": [
+        -2342.6082643484465,
+        -2626.321794491824
+      ]
+    },
+    "node_versions": {
+      "was-node-suite-comfyui": "1.0.2",
+      "comfy-core": "v0.3.10-42-gff838657",
+      "comfyui-easy-use": "1.2.7",
+      "ComfyUI-Lightning": "b22b8802756b4e584d0636b10f282ad81f430478"
+    }
+  },
+  "version": 0.4
+}
