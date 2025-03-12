@@ -1,12 +1,15 @@
+import sys
+import os
+from pathlib import Path
+from typing import Optional
+import types
+
 import torch
 import comfy.sd
 from comfy.model_patcher import ModelPatcher
 from comfy.ldm.flux.model import Flux, DoubleStreamBlock, SingleStreamBlock
-import types
 import comfy.utils
 import folder_paths
-from typing import Optional
-import os
 
 
 class ApplySpargeAttn:
@@ -16,6 +19,7 @@ class ApplySpargeAttn:
             "required": {
                 "model": ("MODEL",),
                 "enable_tuning_mode": ("BOOLEAN", {"default": False}),
+                "parallel_tuning": ("BOOLEAN", {"default": False}),
                 "tuned_hyperparams": (
                     [None] + folder_paths.get_filename_list("checkpoints"),
                     {"default": None},
@@ -34,6 +38,7 @@ class ApplySpargeAttn:
         self,
         model: ModelPatcher,
         enable_tuning_mode: bool,
+        parallel_tuning: bool,
         tuned_hyperparams: Optional[str],
         skip_DoubleStreamBlocks: str,
         skip_SingleStreamBlocks: str,
@@ -92,6 +97,13 @@ class ApplySpargeAttn:
                 sd_path = folder_paths.get_full_path("checkpoints", tuned_hyperparams)
                 sd = comfy.utils.load_torch_file(sd_path, safe_load=True)
                 load_sparse_attention_state_dict(dm, sd)
+
+            if parallel_tuning:
+                comfyui_root = Path(os.path.abspath(__file__)).resolve().parents[3]
+                sys.path.insert(0, str(comfyui_root))
+                os.environ["PARALLEL_TUNE"] = "1"
+            else:
+                os.environ["PARALLEL_TUNE"] = ""
 
         except Exception as e:
             print(e)

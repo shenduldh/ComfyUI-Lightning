@@ -1,6 +1,6 @@
 {
-  "last_node_id": 65,
-  "last_link_id": 154,
+  "last_node_id": 66,
+  "last_link_id": 155,
   "nodes": [
     {
       "id": 44,
@@ -66,7 +66,7 @@
       "type": "UNETLoader",
       "pos": [
         2837.7734375,
-        2997.1875
+        2990.2080078125
       ],
       "size": [
         310,
@@ -101,7 +101,7 @@
       "type": "VAELoader",
       "pos": [
         2827.0986328125,
-        2712.548095703125
+        2705.568603515625
       ],
       "size": [
         315,
@@ -135,7 +135,7 @@
       "type": "DualCLIPLoader",
       "pos": [
         2878.93994140625,
-        2831.234130859375
+        2824.254638671875
       ],
       "size": [
         265.7513427734375,
@@ -172,7 +172,7 @@
       "type": "KSamplerSelect",
       "pos": [
         4031.33837890625,
-        2731.69677734375
+        2724.71728515625
       ],
       "size": [
         315,
@@ -205,7 +205,7 @@
       "type": "ModelSamplingFlux",
       "pos": [
         3683.709228515625,
-        3039.34814453125
+        3032.36865234375
       ],
       "size": [
         315,
@@ -267,7 +267,7 @@
       "type": "RandomNoise",
       "pos": [
         3683.92333984375,
-        2899.591796875
+        2892.6123046875
       ],
       "size": [
         315,
@@ -292,7 +292,7 @@
         "Node name for S&R": "RandomNoise"
       },
       "widgets_values": [
-        156689069090678,
+        212319075233071,
         "randomize"
       ]
     },
@@ -301,7 +301,7 @@
       "type": "EmptySD3LatentImage",
       "pos": [
         3433.46337890625,
-        2736.291259765625
+        2729.311767578125
       ],
       "size": [
         210,
@@ -353,7 +353,7 @@
       "type": "FluxGuidance",
       "pos": [
         3434.7802734375,
-        2870.14794921875
+        2863.16845703125
       ],
       "size": [
         211.60000610351562,
@@ -394,7 +394,7 @@
       "type": "CLIPTextEncode",
       "pos": [
         3194.523193359375,
-        3009.93017578125
+        3002.95068359375
       ],
       "size": [
         285.6000061035156,
@@ -443,7 +443,7 @@
       "type": "VAEDecode",
       "pos": [
         3688.32666015625,
-        3228.65234375
+        3221.6728515625
       ],
       "size": [
         250,
@@ -487,7 +487,7 @@
       "type": "SplitSigmas",
       "pos": [
         4035.54736328125,
-        2858.10986328125
+        2851.13037109375
       ],
       "size": [
         315,
@@ -536,7 +536,7 @@
       "type": "BasicGuider",
       "pos": [
         4041.8369140625,
-        3000.2958984375
+        2993.31640625
       ],
       "size": [
         250,
@@ -583,7 +583,7 @@
       "type": "SamplerCustomAdvanced",
       "pos": [
         4045.999755859375,
-        3114.15673828125
+        3107.17724609375
       ],
       "size": [
         245.7446746826172,
@@ -862,74 +862,6 @@
       ]
     },
     {
-      "id": 65,
-      "type": "easy forLoopEnd",
-      "pos": [
-        3554.689453125,
-        3453.738037109375
-      ],
-      "size": [
-        178,
-        86
-      ],
-      "flags": {},
-      "order": 23,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "flow",
-          "type": "FLOW_CONTROL",
-          "link": 146,
-          "shape": 5
-        },
-        {
-          "name": "initial_value1",
-          "type": "*",
-          "link": 148,
-          "shape": 7
-        },
-        {
-          "name": "initial_value2",
-          "type": "*",
-          "link": 150
-        },
-        {
-          "name": "initial_value3",
-          "type": "*",
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "name": "value1",
-          "type": "*",
-          "links": [
-            149
-          ],
-          "slot_index": 0
-        },
-        {
-          "name": "value2",
-          "type": "*",
-          "links": [
-            151
-          ],
-          "slot_index": 1
-        },
-        {
-          "name": "value3",
-          "type": "*",
-          "links": null
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "easy forLoopEnd"
-      },
-      "widgets_values": [],
-      "color": "#223",
-      "bgcolor": "#335"
-    },
-    {
       "id": 63,
       "type": "easy batchAnything",
       "pos": [
@@ -1000,38 +932,11 @@
       ]
     },
     {
-      "id": 61,
-      "type": "PreviewImage",
-      "pos": [
-        3796.503173828125,
-        3574.6787109375
-      ],
-      "size": [
-        341.09991455078125,
-        287.171875
-      ],
-      "flags": {},
-      "order": 24,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 149
-        }
-      ],
-      "outputs": [],
-      "properties": {
-        "Node name for S&R": "PreviewImage"
-      },
-      "widgets_values": []
-    },
-    {
       "id": 17,
       "type": "PrimitiveNode",
       "pos": [
         3193.41162109375,
-        2737.743408203125
+        2730.763916015625
       ],
       "size": [
         210,
@@ -1071,7 +976,7 @@
       "type": "PrimitiveNode",
       "pos": [
         3194.1640625,
-        2867.775146484375
+        2860.795654296875
       ],
       "size": [
         210,
@@ -1111,11 +1016,11 @@
       "type": "ApplySpargeAttn",
       "pos": [
         2833.23681640625,
-        3141.427490234375
+        3134.447998046875
       ],
       "size": [
         315,
-        130
+        154
       ],
       "flags": {},
       "order": 11,
@@ -1143,6 +1048,7 @@
       },
       "widgets_values": [
         true,
+        false,
         null,
         "",
         ""
@@ -1153,7 +1059,7 @@
       "type": "BasicScheduler",
       "pos": [
         3683.923583984375,
-        2735.571533203125
+        2728.592041015625
       ],
       "size": [
         315,
@@ -1259,6 +1165,100 @@
       ],
       "color": "#223",
       "bgcolor": "#335"
+    },
+    {
+      "id": 65,
+      "type": "easy forLoopEnd",
+      "pos": [
+        3554.689453125,
+        3453.738037109375
+      ],
+      "size": [
+        178,
+        86
+      ],
+      "flags": {},
+      "order": 23,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "flow",
+          "type": "FLOW_CONTROL",
+          "link": 146,
+          "shape": 5
+        },
+        {
+          "name": "initial_value1",
+          "type": "*",
+          "link": 148,
+          "shape": 7
+        },
+        {
+          "name": "initial_value2",
+          "type": "*",
+          "link": 150
+        },
+        {
+          "name": "initial_value3",
+          "type": "*",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "value1",
+          "type": "*",
+          "links": [
+            155
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "value2",
+          "type": "*",
+          "links": [
+            151
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "value3",
+          "type": "*",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "easy forLoopEnd"
+      },
+      "widgets_values": [],
+      "color": "#223",
+      "bgcolor": "#335"
+    },
+    {
+      "id": 66,
+      "type": "PreviewImage",
+      "pos": [
+        3797.24267578125,
+        3584.725341796875
+      ],
+      "size": [
+        210,
+        26
+      ],
+      "flags": {},
+      "order": 24,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 155
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "PreviewImage"
+      }
     }
   ],
   "links": [
@@ -1535,14 +1535,6 @@
       "*"
     ],
     [
-      149,
-      65,
-      0,
-      61,
-      0,
-      "IMAGE"
-    ],
-    [
       150,
       64,
       0,
@@ -1573,6 +1565,14 @@
       22,
       0,
       "MODEL"
+    ],
+    [
+      155,
+      65,
+      0,
+      66,
+      0,
+      "IMAGE"
     ]
   ],
   "groups": [
@@ -1581,9 +1581,9 @@
       "title": "Flux Pipeline",
       "bounding": [
         2800.6484375,
-        2614.6806640625,
+        2607.701171875,
         1570.85107421875,
-        685.4942626953125
+        700.9022827148438
       ],
       "color": "#3f789e",
       "font_size": 24,
@@ -1608,15 +1608,15 @@
     "ds": {
       "scale": 0.6303940863129087,
       "offset": [
-        -2342.6082643484465,
-        -2626.321794491824
+        -2453.948020312823,
+        -2893.127413336364
       ]
     },
     "node_versions": {
       "was-node-suite-comfyui": "1.0.2",
       "comfy-core": "v0.3.10-42-gff838657",
       "comfyui-easy-use": "1.2.7",
-      "ComfyUI-Lightning": "b22b8802756b4e584d0636b10f282ad81f430478"
+      "ComfyUI-Lightning": "8f28f4cb7b161da517e34610648549bf306cc17a"
     }
   },
   "version": 0.4
