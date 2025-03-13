@@ -13,6 +13,9 @@ try:
     from .spargeattn.nodes import NODE_CLASS_MAPPINGS as spargeattn_NODE_CLASS_MAPPINGS
     NODE_CLASS_MAPPINGS.update(spargeattn_NODE_CLASS_MAPPINGS)
 
+    # from .tomesd.nodes import NODE_CLASS_MAPPINGS as tomesd_NODE_CLASS_MAPPINGS
+    # NODE_CLASS_MAPPINGS.update(tomesd_NODE_CLASS_MAPPINGS)
+
     NODE_DISPLAY_NAME_MAPPINGS = {k: v.TITLE for k, v in NODE_CLASS_MAPPINGS.items()}
     __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]
 except:

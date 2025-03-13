@@ -57,23 +57,22 @@ SpargeAttn is an attention acceleration method based on SageAttention, which req
    cd ./SpargeAttn
    pip install -e .
    ```
-
 2. If you do not have a hyperparameter file, you should perform a few rounds of quality fine-tuning to get one first. You just need to open the `enable_tuning_mode` of the node `Apply SpargeAttn` and perform the generation. For example, generate 50-step 512*512 images at 10 different prompts (very time-consuming);
 
    <img src="./assets/spargeattn_autotune.png" alt="SpargeAttn Autotune" width="35%"/>
 
    > - The `skip_DoubleStreamBlocks` and `skip_SingleStreamBlocks` arguments are used to skip certain blocks that do not require the use of `SpargeAttn`, mainly to work with `TeaCache` and `FBCache`.
    > - Enable `parallel_tuning ` to utilize multiple GPUs to accelerate tuning. In this case, you need to start ComfyUI with the argument `--disable-cuda-malloc`.
-   > - If you have a well-tuned hyperparameter file, feel free to share it.
-
+   > - [New] Follow the author's code updates to liberalize the use of the `l1` and `pv_l1` parameters for tuning.
+   >
 3. Turn off `enable_tuning_mode` and use the `Save Finetuned SpargeAttn Hyperparams` node to save your hyperparameter file;
 
    <img src="./assets/spargeattn_saving.png" alt="SpargeAttn Saving" width="90%"/>
-
 4. Remove or disable the `Save Finetuned SpargeAttn Hyperparams` node and place the saved hyperparameter file in the `models/checkpoints` folder. Load this hyperparameter file in the `Apply SpargeAttn` node;
 
    <img src="./assets/spargeattn_loading.png" alt="SpargeAttn Loading" width="90%"/>
-
 5. Enjoy yourself.
 
 To make tuning hyperparameters easier, I've provided an example [workflow](./examples/flux_spargeattn_tuning_example_workflow.json) here. This workflow defaults to generating a 50-step 512*512 image for each of the 10 preset prompts (which can be modified as you see fit). Click on the `Queue` button to start tuning. Of course, you need to make sure you have the right environment before you start. Again, this process is very time consuming.
+
+If you have a well-tuned hyperparameter file, feel free to share it.

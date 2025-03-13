@@ -18,6 +18,8 @@ class ApplySpargeAttn:
         return {
             "required": {
                 "model": ("MODEL",),
+                "l1": ("FLOAT", {"default": 0.06, "step": 0.0001}),
+                "pv_l1": ("FLOAT", {"default": 0.065, "step": 0.0001}),
                 "enable_tuning_mode": ("BOOLEAN", {"default": False}),
                 "parallel_tuning": ("BOOLEAN", {"default": False}),
                 "tuned_hyperparams": (
@@ -37,6 +39,8 @@ class ApplySpargeAttn:
     def patch(
         self,
         model: ModelPatcher,
+        l1: float,
+        pv_l1: float,
         enable_tuning_mode: bool,
         parallel_tuning: bool,
         tuned_hyperparams: Optional[str],
@@ -68,7 +72,7 @@ class ApplySpargeAttn:
                     block: DoubleStreamBlock = getattr(block, "_orig_mod", block)
 
                 if not hasattr(block, "spargeattn"):
-                    block.spargeattn = SparseAttentionMeansim(l1=0.07, pv_l1=0.08)
+                    block.spargeattn = SparseAttentionMeansim(l1=l1, pv_l1=pv_l1)
                     block.forward = types.MethodType(
                         spargeattn_DoubleStreamBlock_forward, block
                     )
@@ -86,7 +90,7 @@ class ApplySpargeAttn:
                     block: SingleStreamBlock = getattr(block, "_orig_mod", block)
 
                 if not hasattr(block, "spargeattn"):
-                    block.spargeattn = SparseAttentionMeansim(l1=0.07, pv_l1=0.08)
+                    block.spargeattn = SparseAttentionMeansim(l1=l1, pv_l1=pv_l1)
                     block.forward = types.MethodType(
                         spargeattn_SingleStreamBlock_forward, block
                     )
